@@ -1,0 +1,4 @@
+// this is a comment
+/*/* this is a nested comment */*/
+(( )){} // grouping stuff
+!*+-/=<> <= == // operators
