@@ -1,0 +1,26 @@
+# JLox (WIP)
+
+JLox is a Java implementation of Lox, a language from the book
+[Crafting Interpreters](https://craftinginterpreters.com). This repository
+documents my implementation of Lox as I go through the book. The implementation
+uses a tree-walking interpreter over the AST of the source code.
+
+## Chapters
+
+1. Scanning :white_check_mark:
+2. Representing Code
+3. Parsing Expressions
+4. Evaluating Expressions
+5. Statements and State
+6. Control Flow
+7. Functions
+8. Resolving and Binding
+9. Classes
+10. Inheritance
+
+## Additional implementations
+
+I have deviated from the book by adding these features to my implementation of
+lox:
+
+- Comment blocks using `/*` and `*/`, with support for nested comments.
