@@ -43,7 +43,7 @@ class ScannerUtil {
     }
 
     static Optional<Character> getEscapedCharacter(char c) {
-        return Optional.ofNullable(ESCAPE_CHARACTERS.getOrDefault(c, null));
+        return Optional.ofNullable(ESCAPE_CHARACTERS.get(c));
     }
 
     static boolean isDigit(char c) {

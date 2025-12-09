@@ -150,7 +150,7 @@ public class Scanner {
 
         String text = source.substring(start, current);
         TokenType type = getIdentifierOrKeyword(text);
-        addToken(type);
+        addToken(type, text, text);
     }
 
     private void number() {
@@ -221,7 +221,7 @@ public class Scanner {
 
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
-        tokens.add(new Token(type, text, literal, line, col));
+        addToken(type, text, literal);
     }
 
     // Advance should be the only function that increments current. This is to keep

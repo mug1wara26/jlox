@@ -8,7 +8,7 @@ import lox.ast.Expr.Unary;
 public class AstPrinter implements Expr.Visitor<String> {
     private int depth;
 
-    String print(Expr expr) {
+    public String print(Expr expr) {
         depth = 0;
         return expr.accept(this);
     }
@@ -52,6 +52,9 @@ public class AstPrinter implements Expr.Visitor<String> {
             sb.append('\n');
             sb.append(expr.accept(this));
         }
+
+        if (exprs.length > 0)
+            depth -= 1;
 
         return sb.toString();
     }

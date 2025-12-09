@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import lox.ast.AstPrinter;
+import lox.parser.Parser;
 import lox.scanner.Scanner;
 
 public class Lox {
@@ -51,14 +52,24 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
 
-        // For now, just print the tokens.
         for (Token token : tokens) {
             System.out.println(token);
         }
+
+        Parser parser = new Parser(tokens);
+        System.out.println(new AstPrinter().print(parser.parse()));
     }
 
     public static void error(int line, int col, String message) {
         report(line, col, "", message);
+    }
+
+    public static void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, token.col, " at end", message);
+        } else {
+            report(token.line, token.col, " at '" + token.lexeme + "'", message);
+        }
     }
 
     private static void report(int line, int col, String where,
