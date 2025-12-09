@@ -23,10 +23,17 @@ uses a tree-walking interpreter over the AST of the source code.
 I have deviated from the book by adding these features to my implementation of
 lox:
 
+### Lexing
+
 - Comment blocks using `/*` and `*/`, with support for nested comments.
 - String interpolation, by treating curly braces in strings as syntactic sugar
   for string concatenation.
 - Escape characters for a small set of characters.
+
+### Parsing
+
 - While not an actual feature of the language, my AstPrinter prints the AST like
   a file tree, instead of using S-expressions, which I find to be hard to read.
 - Use a Pratt Parser instead of a recursive descent parser.
+- Support for C comma operator.
+- Suppose for ternaries.

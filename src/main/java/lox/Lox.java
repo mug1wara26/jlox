@@ -68,7 +68,7 @@ public class Lox {
         if (token.type == TokenType.EOF) {
             report(token.line, token.col, " at end", message);
         } else {
-            report(token.line, token.col, " at '" + token.lexeme + "'", message);
+            report(token.line, token.col, "at '" + token.lexeme + "'", message);
         }
     }
 

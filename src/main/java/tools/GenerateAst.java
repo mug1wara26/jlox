@@ -7,10 +7,11 @@ import java.util.List;
 
 // Totally copied from craftinginterpreters, not gonna touch this
 public class GenerateAst {
-    public static final String OUTPUT_DIR = "../lox/ast";
+    public static final String OUTPUT_DIR = "lox/ast";
 
     public static void main(String[] args) throws IOException {
         defineAst(OUTPUT_DIR, "Expr", Arrays.asList(
+                "Trinary   : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
                 "Binary   : Expr left, Token operator, Expr right",
                 "Grouping : Expr expression",
                 "Literal  : Object value",
@@ -23,11 +24,11 @@ public class GenerateAst {
         String path = outputDir + "/" + baseName + ".java";
         PrintWriter writer = new PrintWriter(path, "UTF-8");
 
-        writer.println("package lox;");
+        writer.println("package lox.ast;");
         writer.println();
         writer.println("import lox.Token;");
         writer.println();
-        writer.println("abstract class " + baseName + " {");
+        writer.println("public abstract class " + baseName + " {");
 
         defineVisitor(writer, baseName, types);
 
@@ -48,11 +49,11 @@ public class GenerateAst {
     private static void defineType(
             PrintWriter writer, String baseName,
             String className, String fieldList) {
-        writer.println("  static class " + className + " extends " +
+        writer.println("  public static class " + className + " extends " +
                 baseName + " {");
 
         // Constructor.
-        writer.println("    " + className + "(" + fieldList + ") {");
+        writer.println("    public " + className + "(" + fieldList + ") {");
 
         // Store parameters in fields.
         String[] fields = fieldList.split(", ");

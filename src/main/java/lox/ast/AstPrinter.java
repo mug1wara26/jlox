@@ -3,6 +3,7 @@ package lox.ast;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
+import lox.ast.Expr.Trinary;
 import lox.ast.Expr.Unary;
 
 public class AstPrinter implements Expr.Visitor<String> {
@@ -11,6 +12,11 @@ public class AstPrinter implements Expr.Visitor<String> {
     public String print(Expr expr) {
         depth = 0;
         return expr.accept(this);
+    }
+
+    @Override
+    public String visitTrinaryExpr(Trinary expr) {
+        return tree(expr.operator1.lexeme, expr.left, expr.mid) + '\n' + tree(expr.operator2.lexeme, expr.right);
     }
 
     @Override
@@ -58,4 +64,5 @@ public class AstPrinter implements Expr.Visitor<String> {
 
         return sb.toString();
     }
+
 }

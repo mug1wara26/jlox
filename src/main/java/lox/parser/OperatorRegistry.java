@@ -8,9 +8,9 @@ import lox.TokenType;
 
 public class OperatorRegistry {
     private int power = 1;
-    private Map<TokenType, Operator> infixOperators = new HashMap<>();
-    private Map<TokenType, Operator> prefixOperators = new HashMap<>();
-    private Map<TokenType, Operator> postfixOperators = new HashMap<>();
+    private Map<TokenType, Operator.InfixOperator> infixOperators = new HashMap<>();
+    private Map<TokenType, Operator.PrefixOperator> prefixOperators = new HashMap<>();
+    private Map<TokenType, Operator.PostfixOperator> postfixOperators = new HashMap<>();
 
     private int increasePower() {
         return power++;
@@ -26,8 +26,9 @@ public class OperatorRegistry {
 
     void registerRightInfixOperator(TokenType... tokens) {
         int rbp = increasePower();
+        int lbp = increasePower();
         for (TokenType token : tokens) {
-            infixOperators.put(token, new Operator.InfixOperator(token, -1, rbp));
+            infixOperators.put(token, new Operator.InfixOperator(token, lbp, rbp));
         }
     }
 
@@ -47,15 +48,15 @@ public class OperatorRegistry {
         increasePower();
     }
 
-    Optional<Operator> getInfixOperator(TokenType token) {
+    Optional<Operator.InfixOperator> getInfixOperator(TokenType token) {
         return Optional.ofNullable(infixOperators.get(token));
     }
 
-    Optional<Operator> getPrefixOperator(TokenType token) {
+    Optional<Operator.PrefixOperator> getPrefixOperator(TokenType token) {
         return Optional.ofNullable(prefixOperators.get(token));
     }
 
-    Optional<Operator> getPostfixOperator(TokenType token) {
+    Optional<Operator.PostfixOperator> getPostfixOperator(TokenType token) {
         return Optional.ofNullable(postfixOperators.get(token));
     }
 }

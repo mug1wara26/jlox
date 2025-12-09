@@ -21,6 +21,7 @@ public class Parser {
 
     static {
         OPERATOR_REGISTRY.registerLeftInfixOperator(COMMA);
+        OPERATOR_REGISTRY.registerRightInfixOperator(QUESTION_MARK);
         OPERATOR_REGISTRY.registerLeftInfixOperator(BANG_EQUAL, EQUAL_EQUAL);
         OPERATOR_REGISTRY.registerLeftInfixOperator(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL);
         OPERATOR_REGISTRY.registerLeftInfixOperator(PLUS, MINUS);
@@ -53,9 +54,8 @@ public class Parser {
                 new Expr.Literal(null);
             case LEFT_PAREN -> {
                 Expr next_lhs = expr(0);
-                Token t = advance();
-                if (t.type != RIGHT_PAREN)
-                    throw error(next, "Unexpected token");
+                if (!match(RIGHT_PAREN))
+                    throw error(peek(), "Unexpected token, expected RIGHT_PAREN");
                 yield next_lhs;
             }
             case MINUS, BANG -> {
@@ -71,19 +71,28 @@ public class Parser {
             if (isAtEnd())
                 break;
 
-            Optional<Operator> op = OPERATOR_REGISTRY.getInfixOperator(peek().type);
+            Optional<Operator.InfixOperator> op = OPERATOR_REGISTRY.getInfixOperator(peek().type);
             if (op.isPresent()) {
-                switch (op.get()) {
-                    case Operator.InfixOperator infixOp:
-                        if (infixOp.lbp < min_bp) {
-                            break loop;
-                        }
-                        Token op_token = advance();
-                        Expr rhs = expr(infixOp.rbp);
-                        lhs = new Expr.Binary(lhs, op_token, rhs);
-                        break;
+                Operator.InfixOperator infixOp = op.get();
+                if (infixOp.lbp < min_bp) {
+                    break loop;
+                }
 
+                Token op_token = advance();
+                Expr rhs = null;
+
+                switch (infixOp.operator) {
+                    case QUESTION_MARK:
+                        Expr mhs = expr(0);
+                        if (!match(COLON))
+                            throw error(peek(), "Unexpected token, expected COLON");
+                        Token colon_token = previous();
+                        rhs = expr(infixOp.rbp);
+                        lhs = new Expr.Trinary(lhs, op_token, mhs, colon_token, rhs);
+                        break;
                     default:
+                        rhs = expr(infixOp.rbp);
+                        lhs = new Expr.Binary(lhs, op_token, rhs);
                         break;
                 }
             } else {
