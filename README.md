@@ -24,3 +24,6 @@ I have deviated from the book by adding these features to my implementation of
 lox:
 
 - Comment blocks using `/*` and `*/`, with support for nested comments.
+- String interpolation, by treating curly braces in strings as syntactic sugar
+  for string concatenation.
+- Escape characters for a small set of characters.
