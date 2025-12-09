@@ -29,3 +29,4 @@ lox:
 - Escape characters for a small set of characters.
 - While not an actual feature of the language, my AstPrinter prints the AST like
   a file tree, instead of using S-expressions, which I find to be hard to read.
+- Use a Pratt Parser instead of a recursive descent parser.
