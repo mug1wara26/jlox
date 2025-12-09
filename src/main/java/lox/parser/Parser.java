@@ -20,6 +20,7 @@ public class Parser {
     private int current = 0;
 
     static {
+        OPERATOR_REGISTRY.registerLeftInfixOperator(COMMA);
         OPERATOR_REGISTRY.registerLeftInfixOperator(BANG_EQUAL, EQUAL_EQUAL);
         OPERATOR_REGISTRY.registerLeftInfixOperator(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL);
         OPERATOR_REGISTRY.registerLeftInfixOperator(PLUS, MINUS);
