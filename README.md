@@ -8,7 +8,7 @@ uses a tree-walking interpreter over the AST of the source code.
 ## Chapters
 
 1. Scanning :white_check_mark:
-2. Representing Code
+2. Representing Code :white_check_mark:
 3. Parsing Expressions
 4. Evaluating Expressions
 5. Statements and State
