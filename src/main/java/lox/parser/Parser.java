@@ -20,8 +20,11 @@ public class Parser {
     private int current = 0;
 
     static {
+        OPERATOR_REGISTRY.registerLeftInfixOperator(BANG_EQUAL, EQUAL_EQUAL);
+        OPERATOR_REGISTRY.registerLeftInfixOperator(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL);
         OPERATOR_REGISTRY.registerLeftInfixOperator(PLUS, MINUS);
         OPERATOR_REGISTRY.registerLeftInfixOperator(STAR, SLASH);
+        OPERATOR_REGISTRY.registerPrefixOperator(BANG, MINUS);
     }
 
     public Parser(List<Token> tokens) {
@@ -41,6 +44,25 @@ public class Parser {
         Expr lhs = switch (next.type) {
             case IDENTIFIER, NUMBER, STRING ->
                 new Expr.Literal(next.literal);
+            case TRUE ->
+                new Expr.Literal(true);
+            case FALSE ->
+                new Expr.Literal(false);
+            case NIL ->
+                new Expr.Literal(null);
+            case LEFT_PAREN -> {
+                Expr next_lhs = expr(0);
+                Token t = advance();
+                if (t.type != RIGHT_PAREN)
+                    throw error(next, "Unexpected token");
+                yield next_lhs;
+            }
+            case MINUS, BANG -> {
+                // We know it must be in the registry
+                Operator op = OPERATOR_REGISTRY.getPrefixOperator(next.type).get();
+                Expr rhs = expr(op.rbp);
+                yield new Expr.Unary(next, rhs);
+            }
             default -> throw error(next, "Unexpected token");
         };
 
@@ -48,7 +70,7 @@ public class Parser {
             if (isAtEnd())
                 break;
 
-            Optional<Operator> op = OPERATOR_REGISTRY.getOperator(peek().type);
+            Optional<Operator> op = OPERATOR_REGISTRY.getInfixOperator(peek().type);
             if (op.isPresent()) {
                 switch (op.get()) {
                     case Operator.InfixOperator infixOp:
@@ -63,6 +85,8 @@ public class Parser {
                     default:
                         break;
                 }
+            } else {
+                break;
             }
         }
 
