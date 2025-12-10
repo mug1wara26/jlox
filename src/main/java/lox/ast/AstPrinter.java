@@ -3,7 +3,9 @@ package lox.ast;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
-import lox.ast.Expr.Trinary;
+import lox.ast.Expr.StringTemplate;
+import lox.ast.Expr.TemplateLiteral;
+import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
 
 public class AstPrinter implements Expr.Visitor<String> {
@@ -15,7 +17,7 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
-    public String visitTrinaryExpr(Trinary expr) {
+    public String visitTernaryExpr(Ternary expr) {
         return tree(expr.operator1.lexeme, expr.left, expr.mid) + '\n' + tree(expr.operator2.lexeme, expr.right);
     }
 
@@ -37,6 +39,17 @@ public class AstPrinter implements Expr.Visitor<String> {
     @Override
     public String visitUnaryExpr(Unary expr) {
         return tree(expr.operator.lexeme, expr.right);
+    }
+
+    @Override
+    public String visitTemplateLiteralExpr(TemplateLiteral expr) {
+        return tree(String.format("$[start: %d, end: %d]", expr.start, expr.end), expr.expression);
+    }
+
+    @Override
+    public String visitStringTemplateExpr(StringTemplate expr) {
+        Expr[] exprs = {};
+        return tree("Template " + expr.value, expr.templates.toArray(exprs));
     }
 
     private void appendDepth(StringBuilder sb) {
@@ -64,5 +77,4 @@ public class AstPrinter implements Expr.Visitor<String> {
 
         return sb.toString();
     }
-
 }

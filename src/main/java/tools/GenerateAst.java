@@ -11,10 +11,12 @@ public class GenerateAst {
 
     public static void main(String[] args) throws IOException {
         defineAst(OUTPUT_DIR, "Expr", Arrays.asList(
-                "Trinary   : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
+                "Ternary   : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
                 "Binary   : Expr left, Token operator, Expr right",
                 "Grouping : Expr expression",
                 "Literal  : Object value",
+                "TemplateLiteral: Expr expression, int start, int end",
+                "StringTemplate: String value, List<TemplateLiteral> templates",
                 "Unary    : Token operator, Expr right"));
     }
 
@@ -25,6 +27,8 @@ public class GenerateAst {
         PrintWriter writer = new PrintWriter(path, "UTF-8");
 
         writer.println("package lox.ast;");
+        writer.println();
+        writer.println("import java.util.List;");
         writer.println();
         writer.println("import lox.Token;");
         writer.println();
@@ -40,7 +44,7 @@ public class GenerateAst {
 
         // The base accept() method.
         writer.println();
-        writer.println("  abstract <R> R accept(Visitor<R> visitor);");
+        writer.println("  public abstract <R> R accept(Visitor<R> visitor);");
 
         writer.println("}");
         writer.close();
@@ -67,7 +71,7 @@ public class GenerateAst {
         // Visitor pattern.
         writer.println();
         writer.println("    @Override");
-        writer.println("    <R> R accept(Visitor<R> visitor) {");
+        writer.println("    public <R> R accept(Visitor<R> visitor) {");
         writer.println("      return visitor.visit" +
                 className + baseName + "(this);");
         writer.println("    }");
@@ -75,7 +79,7 @@ public class GenerateAst {
         // Fields.
         writer.println();
         for (String field : fields) {
-            writer.println("    final " + field + ";");
+            writer.println("    public final " + field + ";");
         }
 
         writer.println("  }");
@@ -83,7 +87,7 @@ public class GenerateAst {
 
     private static void defineVisitor(
             PrintWriter writer, String baseName, List<String> types) {
-        writer.println("  interface Visitor<R> {");
+        writer.println("  public interface Visitor<R> {");
 
         for (String type : types) {
             String typeName = type.split(":")[0].trim();

@@ -10,7 +10,7 @@ import static lox.TokenType.*;
 
 class ScannerUtil {
     private static final Map<String, TokenType> KEYWORDS;
-    private static final Map<Character, Character> ESCAPE_CHARACTERS;
+    private static final Map<Character, Character> ESCAPE_CHARACTERS = new HashMap<>();
     static {
         KEYWORDS = new HashMap<>();
         KEYWORDS.put("and", AND);
@@ -30,7 +30,6 @@ class ScannerUtil {
         KEYWORDS.put("var", VAR);
         KEYWORDS.put("while", WHILE);
 
-        ESCAPE_CHARACTERS = new HashMap<>();
         ESCAPE_CHARACTERS.put('\"', '\"');
         ESCAPE_CHARACTERS.put('{', '{');
         ESCAPE_CHARACTERS.put('\\', '\\');
@@ -40,10 +39,6 @@ class ScannerUtil {
 
     static TokenType getIdentifierOrKeyword(String text) {
         return KEYWORDS.getOrDefault(text, IDENTIFIER);
-    }
-
-    static Optional<Character> getEscapedCharacter(char c) {
-        return Optional.ofNullable(ESCAPE_CHARACTERS.get(c));
     }
 
     static boolean isDigit(char c) {
@@ -58,5 +53,9 @@ class ScannerUtil {
 
     static boolean isAlphaNumeric(char c) {
         return isAlpha(c) || isDigit(c);
+    }
+
+    static Optional<Character> getEscapedCharacter(char c) {
+        return Optional.ofNullable(ESCAPE_CHARACTERS.get(c));
     }
 }

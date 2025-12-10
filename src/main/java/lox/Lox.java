@@ -9,11 +9,17 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import lox.ast.AstPrinter;
+import lox.ast.Expr;
+import lox.interpreter.Interpreter;
+import lox.interpreter.InterpreterUtil;
+import lox.interpreter.RuntimeError;
 import lox.parser.Parser;
+import lox.scanner.Location;
 import lox.scanner.Scanner;
 
 public class Lox {
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -32,6 +38,8 @@ public class Lox {
 
         if (hadError)
             System.exit(65);
+        if (hadRuntimeError)
+            System.exit(70);
     }
 
     private static void runPrompt() throws IOException {
@@ -51,26 +59,43 @@ public class Lox {
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
+        System.out.println(tokens);
 
-        Parser parser = new Parser(tokens);
-        System.out.println(new AstPrinter().print(parser.parse()));
+        /*
+         * Parser parser = new Parser(tokens);
+         * 
+         * Expr result = parser.parse();
+         * if (result != null) {
+         * System.out.println(new AstPrinter().print(result));
+         * System.out.println(InterpreterUtil.stringify(new
+         * Interpreter().interpret(result)));
+         * }
+         */
     }
 
-    public static void error(int line, int col, String message) {
-        report(line, col, "", message);
+    public static void error(Location loc, String message) {
+        report(loc, "", message);
     }
 
     public static void error(Token token, String message) {
         if (token.type == TokenType.EOF) {
-            report(token.line, token.col, " at end", message);
+            report(token.loc, "at end", message);
         } else {
-            report(token.line, token.col, "at '" + token.lexeme + "'", message);
+            report(token.loc, "at '" + token.lexeme + "'", message);
         }
     }
 
-    private static void report(int line, int col, String where,
+    private static void report(Location loc, String where,
             String message) {
-        System.err.println(String.format("[line: %d, col: %d] Error %s: %s", line, col, where, message));
+        System.err.println(String.format("[line: %d, col: %d] Error %s: %s", loc.line(), loc.col(), where, message));
         hadError = true;
     }
+
+    public static void runtimeError(RuntimeError error) {
+        System.err.println(
+                String.format("%s\n[line: %d, col: %d]", error.getMessage(), error.token.loc.line(),
+                        error.token.loc.col()));
+        hadRuntimeError = true;
+    }
+
 }

@@ -1,18 +1,18 @@
 package lox;
 
+import lox.scanner.Location;
+
 public class Token {
     public final TokenType type;
     public final String lexeme;
     public final Object literal;
-    final int line;
-    final int col;
+    public final Location loc;
 
-    public Token(TokenType type, String lexeme, Object literal, int line, int col) {
+    public Token(TokenType type, String lexeme, Object literal, Location loc) {
         this.type = type;
         this.lexeme = lexeme;
         this.literal = literal;
-        this.line = line;
-        this.col = col;
+        this.loc = loc;
     }
 
     public String toString() {

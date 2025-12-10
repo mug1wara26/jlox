@@ -1,17 +1,26 @@
 package lox.parser;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import lox.Token;
 import lox.Lox;
 import lox.TokenType;
 import lox.ast.Expr;
+import lox.ast.Expr.Literal;
+import lox.ast.Expr.StringTemplate;
+import lox.ast.Expr.TemplateLiteral;
+import lox.scanner.Location;
+import lox.scanner.Scanner;
 
 import static lox.TokenType.*;
 
 public class Parser {
     private final static OperatorRegistry OPERATOR_REGISTRY = new OperatorRegistry();
+    private static final Map<Character, Character> ESCAPE_CHARACTERS = new HashMap<>();
 
     private static class ParseError extends RuntimeException {
     }
@@ -27,6 +36,12 @@ public class Parser {
         OPERATOR_REGISTRY.registerLeftInfixOperator(PLUS, MINUS);
         OPERATOR_REGISTRY.registerLeftInfixOperator(STAR, SLASH);
         OPERATOR_REGISTRY.registerPrefixOperator(BANG, MINUS);
+
+        ESCAPE_CHARACTERS.put('\"', '\"');
+        ESCAPE_CHARACTERS.put('{', '{');
+        ESCAPE_CHARACTERS.put('\\', '\\');
+        ESCAPE_CHARACTERS.put('n', '\n');
+        ESCAPE_CHARACTERS.put('t', '\t');
     }
 
     public Parser(List<Token> tokens) {
@@ -34,6 +49,7 @@ public class Parser {
     }
 
     public Expr parse() {
+        System.out.println(tokens);
         try {
             return expr(0);
         } catch (ParseError error) {
@@ -41,11 +57,13 @@ public class Parser {
         }
     }
 
-    private Expr expr(int min_bp) throws ParseError {
+    private Expr expr(int min_bp) {
         Token next = advance();
         Expr lhs = switch (next.type) {
-            case IDENTIFIER, NUMBER, STRING ->
+            case IDENTIFIER, NUMBER ->
                 new Expr.Literal(next.literal);
+            case STRING ->
+                parseString(next, (String) next.literal);
             case TRUE ->
                 new Expr.Literal(true);
             case FALSE ->
@@ -88,16 +106,15 @@ public class Parser {
                             throw error(peek(), "Unexpected token, expected COLON");
                         Token colon_token = previous();
                         rhs = expr(infixOp.rbp);
-                        lhs = new Expr.Trinary(lhs, op_token, mhs, colon_token, rhs);
+                        lhs = new Expr.Ternary(lhs, op_token, mhs, colon_token, rhs);
                         break;
                     default:
                         rhs = expr(infixOp.rbp);
                         lhs = new Expr.Binary(lhs, op_token, rhs);
                         break;
                 }
-            } else {
+            } else
                 break;
-            }
         }
 
         return lhs;
@@ -121,8 +138,9 @@ public class Parser {
     }
 
     private Token advance() {
-        if (!isAtEnd())
-            current++;
+        if (isAtEnd())
+            return peek();
+        current++;
         return previous();
     }
 
@@ -141,5 +159,79 @@ public class Parser {
     private ParseError error(Token token, String message) {
         Lox.error(token, message);
         return new ParseError();
+    }
+
+    static Optional<Character> getEscapedCharacter(char c) {
+        return Optional.ofNullable(ESCAPE_CHARACTERS.get(c));
+    }
+
+    private Expr parseString(Token t, String s) {
+        int i = 0;
+        Location loc = new Location(t.loc.offset() + 1, t.loc.line(), t.loc.col() + 1);
+        boolean is_escaping = false;
+        boolean is_interpolating = false;
+        List<TemplateLiteral> templates = new ArrayList<>();
+
+        StringBuilder sb = new StringBuilder();
+
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (is_escaping) {
+                Optional<Character> escaped = getEscapedCharacter(c);
+                if (escaped.isPresent())
+                    sb.append(escaped);
+                else
+                    Lox.error(loc, "Invalid escape sequence");
+                is_escaping = false;
+            } else {
+                switch (c) {
+                    case '\\':
+                        is_escaping = true;
+                        break;
+                    case '$':
+                        is_interpolating = true;
+                        break;
+                    case '{':
+                        if (is_interpolating) {
+                            Scanner sub_sc = Scanner.interpolateString(s, i + 1, loc.line(), loc.col() + 1);
+                            Parser sub_parser = new Parser(sub_sc.scanTokens());
+
+                            Expr innerExpr = sub_parser.parse();
+                            if (innerExpr == null)
+                                // Lox.error already called by sub_parser.
+                                throw new ParseError();
+
+                            templates.add(new TemplateLiteral(innerExpr, i - 1, sub_sc.getCurrent().offset()));
+                            i = sub_sc.getCurrent().offset();
+                            loc.bringTo(sub_sc.getCurrent());
+
+                            is_interpolating = false;
+                            continue;
+                        } else
+                            sb.append(c);
+                        break;
+                    default:
+                        if (is_interpolating) {
+                            sb.append('$');
+                            is_interpolating = false;
+                        }
+                        sb.append(c);
+                        break;
+                }
+            }
+
+            loc.increment(c);
+            i += 1;
+        }
+
+        if (is_escaping)
+            error(t, "Unterminated string literal");
+        if (is_interpolating)
+            sb.append('$');
+
+        if (templates.size() == 0)
+            return new Literal(sb.toString());
+        else
+            return new StringTemplate(sb.toString(), templates);
     }
 }

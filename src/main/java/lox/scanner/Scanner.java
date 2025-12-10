@@ -1,7 +1,9 @@
 package lox.scanner;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import lox.TokenType;
 import lox.Token;
@@ -15,24 +17,26 @@ public class Scanner {
     private final String source;
     private final List<Token> tokens = new ArrayList<>();
 
-    private int start = 0;
-    private int current = 0;
-    private int line = 1;
-    private int col = 0;
+    private Location start;
+    private Location current;
     private boolean is_interpolated = false;
     private boolean is_execution_stopped = false;
 
     public Scanner(String source) {
         this.source = source;
+        this.start = new Location();
+        this.current = new Location();
     }
 
-    public Scanner(String source, int current) {
+    public Scanner(String source, int current, int line, int col) {
         this.source = source;
-        this.current = current;
+        this.current = new Location(current, line, col);
+        this.start = new Location();
+        start.bringTo(this.current);
     }
 
-    public static Scanner interpolateString(String source, int current) {
-        Scanner sc = new Scanner(source, current);
+    public static Scanner interpolateString(String source, int current, int line, int col) {
+        Scanner sc = new Scanner(source, current, line, col);
         sc.is_interpolated = true;
 
         return sc;
@@ -41,12 +45,12 @@ public class Scanner {
     public List<Token> scanTokens() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
-            start = current;
+            start.bringTo(current);
             scanToken();
         }
 
         if (!is_interpolated)
-            tokens.add(new Token(EOF, "", null, line, col));
+            tokens.add(new Token(EOF, "", null, current));
         return tokens;
     }
 
@@ -64,9 +68,10 @@ public class Scanner {
                 addToken(LEFT_BRACE);
                 break;
             case '}':
-                if (is_interpolated)
+                if (is_interpolated) {
                     is_execution_stopped = true;
-                else
+                    addToken(INTERP_END);
+                } else
                     addToken(RIGHT_BRACE);
                 break;
             case ',':
@@ -104,7 +109,7 @@ public class Scanner {
                     }
 
                     if (isAtEnd())
-                        Lox.error(line, col, "Expected end comment marker but reached end of file.");
+                        Lox.error(current, "Expected end comment marker but reached end of file.");
                 } else {
                     addToken(SLASH);
                 }
@@ -145,7 +150,7 @@ public class Scanner {
                 else if (isAlpha(c))
                     identifier();
                 else
-                    Lox.error(line, col, "Unexpected character.");
+                    Lox.error(start, "Unexpected character.");
                 break;
         }
     }
@@ -154,7 +159,7 @@ public class Scanner {
         while (isAlphaNumeric(peek()))
             advance();
 
-        String text = source.substring(start, current);
+        String text = source.substring(start.offset(), current.offset());
         TokenType type = getIdentifierOrKeyword(text);
         addToken(type, text, text);
     }
@@ -170,95 +175,104 @@ public class Scanner {
                 advance();
         }
 
-        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+        addToken(NUMBER, Double.parseDouble(source.substring(start.offset(), current.offset())));
     }
 
     private void string() {
-        StringBuilder sb = new StringBuilder();
+        addToken(STRING_START);
+        start.bringTo(current);
+
         boolean is_escaping = false;
-        while ((is_escaping || peek() != '"') && !isAtEnd()) {
+        StringBuilder sb = new StringBuilder();
+
+        while (peek() != '"' && !isAtEnd()) {
             char c = advance();
-            if (is_escaping)
-                getEscapedCharacter(c).ifPresentOrElse(x -> sb.append(c),
-                        () -> Lox.error(line, col, "Invalid escape sequence"));
-            else if (c == '\\')
-                is_escaping = true;
-            else if (c == '{') {
-                Scanner sub_sc = interpolateString(source, current);
-                sub_sc.scanTokens();
 
-                addToken(STRING, '"' + sb.toString() + '"', sb.toString());
-                addToken(PLUS, "+", null);
-                addToken(LEFT_PAREN, "(", null);
-                addTokens(sub_sc.tokens);
-                addToken(RIGHT_PAREN, ")", null);
-                addToken(PLUS, "+", null);
+            if (is_escaping) {
+                Optional<Character> escaped = getEscapedCharacter(c);
+                if (escaped.isPresent())
+                    sb.append(escaped);
+                else
+                    Lox.error(current, "Invalid escape sequence");
+            } else {
+                switch (c) {
+                    case '\\':
+                        is_escaping = true;
+                        break;
+                    case '$':
+                        if (match('{')) {
+                            addToken(STRING, sb.toString(), sb.toString());
+                            sb.setLength(0);
+                            // This is safe since the previous 2 characters must be on the same line and
+                            // must be ${
+                            start.bringTo(new Location(current.offset() - 2, current.line(), current.col()));
+                            addToken(INTERP_START);
+                            start.bringTo(current);
 
-                // Clear the string builder update start
-                sb.setLength(0);
-                current = sub_sc.current;
-                start = current;
-            } else
-                sb.append(c);
+                            Scanner sub_sc = Scanner.interpolateString(source, start.offset(), start.line(),
+                                    start.col());
+                            List<Token> new_tokens = sub_sc.scanTokens();
+                            addTokens(new_tokens);
+                            current.bringTo(sub_sc.current);
+                            start.bringTo(current);
+                        } else
+                            sb.append(c);
+                        break;
+                    default:
+                        sb.append(c);
+                        break;
+                }
+            }
         }
 
-        if (isAtEnd()) {
-            Lox.error(line, col, "Expected closing string but reached end of file.");
-            return;
-        }
+        addToken(STRING, sb.toString(), sb.toString());
 
-        // The closing ".
+        // Consume the ending "
+        start.bringTo(current);
         advance();
+        addToken(STRING_END);
+    }
 
-        addToken(STRING, '"' + sb.toString() + '"', sb.toString());
+    private void addTokens(Collection<Token> tokens) {
+        this.tokens.addAll(tokens);
     }
 
     private void addToken(TokenType type) {
         addToken(type, null);
     }
 
-    private void addTokens(List<Token> tokens) {
-        this.tokens.addAll(tokens);
-    }
-
     private void addToken(TokenType type, String lexeme, Object literal) {
-        tokens.add(new Token(type, lexeme, literal, line, col));
+        tokens.add(new Token(type, lexeme, literal, start));
     }
 
     private void addToken(TokenType type, Object literal) {
-        String text = source.substring(start, current);
+        String text = source.substring(start.offset(), current.offset());
         addToken(type, text, literal);
     }
 
     // Advance should be the only function that increments current. This is to keep
     // track of line and col
     private char advance() {
-        char current_char = source.charAt(current++);
-        col += 1;
-        if (current_char == '\n') {
-            line += 1;
-            col = 0;
-        }
-        return current_char;
+        return current.increment(source);
     }
 
     private char peek() {
         if (isAtEnd())
             return '\0';
-        return source.charAt(current);
+        return current.charAt(source);
     }
 
     private char peekNext() {
-        if (current + 1 >= source.length())
+        if (current.offset() + 1 >= source.length())
             return '\0';
 
-        return source.charAt(current + 1);
+        return source.charAt(current.offset() + 1);
     }
 
     private boolean match(char expected) {
         if (isAtEnd())
             return false;
-        if (source.charAt(current) != expected)
+        if (current.charAt(source) != expected)
             return false;
 
         advance();
@@ -266,6 +280,10 @@ public class Scanner {
     }
 
     private boolean isAtEnd() {
-        return is_execution_stopped || current >= source.length();
+        return is_execution_stopped || current.offset() >= source.length();
+    }
+
+    public Location getCurrent() {
+        return current;
     }
 }
