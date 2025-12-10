@@ -3,6 +3,7 @@ package lox;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.System.Logger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,6 +21,7 @@ import lox.scanner.Scanner;
 public class Lox {
     static boolean hadError = false;
     static boolean hadRuntimeError = false;
+    private static final Logger logger = System.getLogger(Lox.class.getName());
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -57,19 +59,18 @@ public class Lox {
     }
 
     private static void run(String source) {
+        logger.log(Logger.Level.INFO, "Running source:\n" + source);
+
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        System.out.println(tokens);
+        logger.log(Logger.Level.INFO, "Tokens:" + tokens);
 
         Parser parser = new Parser(tokens);
         Expr result = parser.parse();
-        if (result != null)
-            System.out.println(new AstPrinter().print(result));
-        /*
-         * System.out.println(InterpreterUtil.stringify(new
-         * Interpreter().interpret(result)));
-         * }
-         */
+        logger.log(Logger.Level.INFO, "AST:" + new AstPrinter().print(result));
+        if (result != null) {
+            System.out.println(InterpreterUtil.stringify(new Interpreter().interpret(result)));
+        }
     }
 
     public static void error(Location loc, String message) {

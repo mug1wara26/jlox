@@ -21,6 +21,13 @@ application {
     mainClass = "lox.Lox"
 }
 
+tasks.named<JavaExec>("run") {
+    val loggingConfig = "${project.projectDir}/logging.properties"
+    jvmArgs("-Djava.util.logging.config.file=$loggingConfig")
+
+    standardInput = System.`in`
+}
+
 tasks.jar {
     manifest {
         attributes["Main-Class"] = "lox.Lox"
