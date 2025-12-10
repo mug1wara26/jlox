@@ -11,13 +11,13 @@ public class GenerateAst {
 
     public static void main(String[] args) throws IOException {
         defineAst(OUTPUT_DIR, "Expr", Arrays.asList(
-                "Ternary   : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
-                "Binary   : Expr left, Token operator, Expr right",
-                "Grouping : Expr expression",
-                "Literal  : Object value",
-                "TemplateLiteral: Expr expression, int start, int end",
-                "StringTemplate: String value, List<TemplateLiteral> templates",
-                "Unary    : Token operator, Expr right"));
+                "Ternary        : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
+                "Binary         : Expr left, Token operator, Expr right",
+                "Grouping       : Expr expression",
+                "Literal        : Object value",
+                "TemplateLiteral: Expr expression",
+                "StringTemplate : List<Expr> templates",
+                "Unary          : Token operator, Expr right"));
     }
 
     private static void defineAst(

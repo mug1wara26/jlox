@@ -43,13 +43,13 @@ public class AstPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitTemplateLiteralExpr(TemplateLiteral expr) {
-        return tree(String.format("$[start: %d, end: %d]", expr.start, expr.end), expr.expression);
+        return tree("${}", expr.expression);
     }
 
     @Override
     public String visitStringTemplateExpr(StringTemplate expr) {
         Expr[] exprs = {};
-        return tree("Template " + expr.value, expr.templates.toArray(exprs));
+        return tree("Template String", expr.templates.toArray(exprs));
     }
 
     private void appendDepth(StringBuilder sb) {

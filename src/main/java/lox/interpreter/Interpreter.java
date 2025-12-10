@@ -116,12 +116,10 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     @Override
     public Object visitStringTemplateExpr(StringTemplate expr) {
-        StringBuilder sb = new StringBuilder(expr.value);
+        StringBuilder sb = new StringBuilder();
 
-        for (TemplateLiteral template : expr.templates.reversed()) {
-            String evaluated_str = stringify(evaluate(template));
-            sb.replace(template.start, template.end, evaluated_str);
-        }
+        for (Expr e : expr.templates)
+            sb.append(stringify(evaluate(e)));
 
         return sb.toString();
     }
