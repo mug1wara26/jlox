@@ -23,6 +23,10 @@ uses a tree-walking interpreter over the AST of the source code.
 I have deviated from the book by adding these features to my implementation of
 lox:
 
+### General
+
+- Support for logging
+
 ### Lexing
 
 - Comment blocks using `/*` and `*/`, with support for nested comments.
