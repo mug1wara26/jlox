@@ -14,6 +14,7 @@ import lox.ast.Stmt;
 import lox.interpreter.Interpreter;
 import lox.interpreter.RuntimeError;
 import lox.parser.Parser;
+import lox.parser.Parser.ParseError;
 import lox.scanner.Location;
 import lox.scanner.Scanner;
 
@@ -75,11 +76,13 @@ public class Lox {
         List<Token> tokens = scanner.scanTokens();
         logger.log(Logger.Level.INFO, "Tokens:" + tokens);
 
-        Parser parser = new Parser(tokens);
-        List<Stmt> result = parser.parse();
-        logger.log(Logger.Level.INFO, "AST:" + new AstPrinter().print(result));
-        if (result != null) {
+        try {
+
+            Parser parser = new Parser(tokens);
+            List<Stmt> result = parser.parse();
+            logger.log(Logger.Level.INFO, "AST:" + new AstPrinter().print(result));
             new Interpreter().interpret(result);
+        } catch (ParseError e) {
         }
     }
 

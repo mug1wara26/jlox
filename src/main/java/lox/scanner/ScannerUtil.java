@@ -30,7 +30,7 @@ class ScannerUtil {
         KEYWORDS.put("var", VAR);
         KEYWORDS.put("while", WHILE);
 
-        ESCAPE_CHARACTERS.put('\"', '\"');
+        ESCAPE_CHARACTERS.put('\"', '"');
         ESCAPE_CHARACTERS.put('{', '{');
         ESCAPE_CHARACTERS.put('\\', '\\');
         ESCAPE_CHARACTERS.put('n', '\n');

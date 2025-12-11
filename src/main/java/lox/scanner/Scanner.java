@@ -163,7 +163,7 @@ public class Scanner {
                 else if (isAlpha(c))
                     identifier();
                 else
-                    Lox.error(start, "Unexpected character.");
+                    Lox.error(start, "Unexpected character: " + c + '.');
                 break;
         }
     }
@@ -178,8 +178,9 @@ public class Scanner {
     }
 
     private void number() {
-        while (isDigit(peek()))
+        while (isDigit(peek())) {
             advance();
+        }
 
         if (peek() == '.' && isDigit(peekNext())) {
             advance();
@@ -198,14 +199,15 @@ public class Scanner {
         boolean is_escaping = false;
         StringBuilder sb = new StringBuilder();
 
-        while (peek() != '"' && !isAtEnd()) {
+        while ((peek() != '"' || is_escaping) && !isAtEnd()) {
             char c = advance();
 
             if (is_escaping) {
                 Optional<Character> escaped = getEscapedCharacter(c);
-                if (escaped.isPresent())
-                    sb.append(escaped);
-                else
+                if (escaped.isPresent()) {
+                    sb.append(escaped.get());
+                    is_escaping = false;
+                } else
                     Lox.error(current, "Invalid escape sequence");
             } else {
                 switch (c) {
@@ -254,7 +256,7 @@ public class Scanner {
     }
 
     private void addToken(TokenType type, String lexeme, Object literal) {
-        tokens.add(new Token(type, lexeme, literal, start));
+        tokens.add(new Token(type, lexeme, literal, new Location().bringTo(start)));
     }
 
     private void addToken(TokenType type, Object literal) {

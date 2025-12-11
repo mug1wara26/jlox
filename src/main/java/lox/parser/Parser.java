@@ -15,7 +15,7 @@ import static lox.TokenType.*;
 public class Parser {
     private final static OperatorRegistry OPERATOR_REGISTRY = new OperatorRegistry();
 
-    private static class ParseError extends RuntimeException {
+    public static class ParseError extends RuntimeException {
     }
 
     private final List<Token> tokens;
