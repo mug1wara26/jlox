@@ -10,9 +10,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import lox.ast.AstPrinter;
-import lox.ast.Expr;
+import lox.ast.Stmt;
 import lox.interpreter.Interpreter;
-import lox.interpreter.InterpreterUtil;
 import lox.interpreter.RuntimeError;
 import lox.parser.Parser;
 import lox.scanner.Location;
@@ -66,10 +65,10 @@ public class Lox {
         logger.log(Logger.Level.INFO, "Tokens:" + tokens);
 
         Parser parser = new Parser(tokens);
-        Expr result = parser.parse();
+        List<Stmt> result = parser.parse();
         logger.log(Logger.Level.INFO, "AST:" + new AstPrinter().print(result));
         if (result != null) {
-            System.out.println(InterpreterUtil.stringify(new Interpreter().interpret(result)));
+            new Interpreter().interpret(result);
         }
     }
 

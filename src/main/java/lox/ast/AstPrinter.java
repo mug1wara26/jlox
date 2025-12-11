@@ -1,5 +1,7 @@
 package lox.ast;
 
+import java.util.List;
+
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
@@ -7,9 +9,28 @@ import lox.ast.Expr.StringTemplate;
 import lox.ast.Expr.TemplateLiteral;
 import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
+import lox.ast.Stmt.Expression;
+import lox.ast.Stmt.Print;
 
-public class AstPrinter implements Expr.Visitor<String> {
+public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     private int depth;
+
+    public String print(List<Stmt> stmts) {
+        StringBuilder sb = new StringBuilder();
+        stmts.forEach(x -> {
+            sb.append('\n');
+            depth = 0;
+            sb.append(x.accept(this));
+        });
+
+        sb.delete(0, 1);
+        return sb.toString();
+    }
+
+    public String print(Stmt stmt) {
+        depth = 0;
+        return stmt.accept(this);
+    }
 
     public String print(Expr expr) {
         depth = 0;
@@ -50,6 +71,16 @@ public class AstPrinter implements Expr.Visitor<String> {
     public String visitStringTemplateExpr(StringTemplate expr) {
         Expr[] exprs = {};
         return tree("Template String", expr.templates.toArray(exprs));
+    }
+
+    @Override
+    public String visitExpressionStmt(Expression stmt) {
+        return tree("Expression", stmt.expression);
+    }
+
+    @Override
+    public String visitPrintStmt(Print stmt) {
+        return tree("Print", stmt.expression);
     }
 
     private void appendDepth(StringBuilder sb) {

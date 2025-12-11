@@ -1,5 +1,8 @@
 package lox.interpreter;
 
+import lox.ast.Stmt;
+import lox.ast.Stmt.Expression;
+import lox.ast.Stmt.Print;
 import lox.ast.Expr;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
@@ -11,17 +14,23 @@ import lox.ast.Expr.Unary;
 
 import static lox.interpreter.InterpreterUtil.*;
 
+import java.util.List;
+
 import lox.Lox;
 
-public class Interpreter implements Expr.Visitor<Object> {
-    public Object interpret(Expr expression) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    public void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            return value;
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
-            return null;
         }
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
     private Object evaluate(Expr expr) {
@@ -130,5 +139,17 @@ public class Interpreter implements Expr.Visitor<Object> {
             sb.append(stringify(evaluate(e)));
 
         return sb.toString();
+    }
+
+    @Override
+    public Void visitExpressionStmt(Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Print stmt) {
+        System.out.println(stringify(evaluate(stmt.expression)));
+        return null;
     }
 }

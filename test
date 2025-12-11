@@ -1,4 +1,4 @@
-// this is a comment
-/*/* this is a nested comment */*/
-(( )){} // grouping stuff
-!*+-/=<> <= == // operators
+test;
+print "one";
+print true;
+print "abc ${"d" + "ef ${3*3}" + 10}";

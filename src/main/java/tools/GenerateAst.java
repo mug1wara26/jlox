@@ -18,6 +18,10 @@ public class GenerateAst {
                 "TemplateLiteral: Expr expression",
                 "StringTemplate : List<Expr> templates",
                 "Unary          : Token operator, Expr right"));
+
+        defineAst(OUTPUT_DIR, "Stmt", Arrays.asList(
+                "Expression : Expr expression",
+                "Print      : Expr expression"));
     }
 
     private static void defineAst(

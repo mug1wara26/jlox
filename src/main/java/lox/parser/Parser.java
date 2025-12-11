@@ -8,6 +8,7 @@ import lox.Token;
 import lox.Lox;
 import lox.TokenType;
 import lox.ast.Expr;
+import lox.ast.Stmt;
 
 import static lox.TokenType.*;
 
@@ -34,12 +35,36 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public Expr parse() {
-        try {
-            return expr(0);
-        } catch (ParseError error) {
-            return null;
+    public List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+
+        return statements;
+    }
+
+    private Stmt statement() {
+        if (match(PRINT))
+            return printStatement();
+
+        return expressionStatement();
+    }
+
+    private Stmt printStatement() {
+        Expr value = expr();
+        consume(SEMICOLON, "Expect ; after value.");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt expressionStatement() {
+        Expr value = expr();
+        consume(SEMICOLON, "Expect ; after value.");
+        return new Stmt.Expression(value);
+    }
+
+    private Expr expr() {
+        return expr(0);
     }
 
     private Expr expr(int min_bp) {
@@ -48,7 +73,7 @@ public class Parser {
             case IDENTIFIER, NUMBER, STRING ->
                 new Expr.Literal(next.literal);
             case INTERP_START -> {
-                Expr next_lhs = expr(0);
+                Expr next_lhs = expr();
                 expect(INTERP_END);
                 yield new Expr.TemplateLiteral(next_lhs);
             }
@@ -59,7 +84,7 @@ public class Parser {
             case NIL ->
                 new Expr.Literal(null);
             case LEFT_PAREN -> {
-                Expr next_lhs = expr(0);
+                Expr next_lhs = expr();
                 expect(RIGHT_PAREN);
                 yield next_lhs;
             }
@@ -67,7 +92,7 @@ public class Parser {
                 List<Expr> templates = new ArrayList<>();
                 boolean is_template = false;
                 while (!match(STRING_END)) {
-                    Expr next_expr = expr(0);
+                    Expr next_expr = expr();
                     if (next_expr instanceof Expr.TemplateLiteral) {
                         is_template = true;
                     }
@@ -105,7 +130,7 @@ public class Parser {
 
                 switch (infixOp.operator) {
                     case QUESTION_MARK:
-                        Expr mhs = expr(0);
+                        Expr mhs = expr();
                         expect(COLON);
                         Token colon_token = previous();
                         rhs = expr(infixOp.rbp);
@@ -163,6 +188,13 @@ public class Parser {
 
     private Token previous() {
         return tokens.get(current - 1);
+    }
+
+    private Token consume(TokenType type, String message) {
+        if (check(type))
+            return advance();
+
+        throw error(peek(), message);
     }
 
     private ParseError error(Token token, String message) {
