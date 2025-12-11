@@ -63,10 +63,24 @@ public class Parser {
         return new Stmt.Expression(value);
     }
 
+    /**
+     * Parses the next expression using a minimum binding power of 0.
+     * 
+     * @return The parsed {@link Expr}
+     */
     private Expr expr() {
         return expr(0);
     }
 
+    /**
+     * Parses the next expression using the minimum binding power supplied.
+     * The parsing will stop when an infix or postfix operator is encountered with a
+     * lower left binding power than the minimum binding power provided, or when the
+     * end is reached, or when an error occurs.
+     * 
+     * @param min_bp
+     * @return
+     */
     private Expr expr(int min_bp) {
         Token next = advance();
         Expr lhs = switch (next.type) {

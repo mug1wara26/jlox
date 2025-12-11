@@ -28,20 +28,33 @@ public class Scanner {
         this.current = new Location();
     }
 
-    public Scanner(String source, int current, int line, int col) {
-        this.source = source;
-        this.current = new Location(current, line, col);
-        this.start = new Location();
-        start.bringTo(this.current);
+    public Scanner(String source, Location start) {
+        this(source);
+        this.start.bringTo(start);
+        this.current.bringTo(start);
     }
 
-    public static Scanner interpolateString(String source, int current, int line, int col) {
-        Scanner sc = new Scanner(source, current, line, col);
+    /**
+     * Instantiate a new {@link Scanner} and set it to interpolation mode
+     * 
+     * @param source The original source code
+     * @param start  The starting location of the expression in the interpolation
+     *               template
+     * @return The new instantiated {@link Scanner}
+     */
+    public static Scanner interpolateString(String source, Location start) {
+        Scanner sc = new Scanner(source, new Location().bringTo(start));
         sc.is_interpolated = true;
 
         return sc;
     }
 
+    /**
+     * Scans tokens in the source code
+     * 
+     * @return List of tokens, including an EOF token at the end if not in
+     *         interpolation mode
+     */
     public List<Token> scanTokens() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
@@ -209,8 +222,7 @@ public class Scanner {
                             addToken(INTERP_START);
                             start.bringTo(current);
 
-                            Scanner sub_sc = Scanner.interpolateString(source, start.offset(), start.line(),
-                                    start.col());
+                            Scanner sub_sc = Scanner.interpolateString(source, start);
                             List<Token> new_tokens = sub_sc.scanTokens();
                             addTokens(new_tokens);
                             current.bringTo(sub_sc.current);

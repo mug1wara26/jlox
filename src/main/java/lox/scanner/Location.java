@@ -29,6 +29,12 @@ public class Location implements Cloneable {
         return col;
     }
 
+    /**
+     * Increments the location to the next character
+     *
+     * @param s Source code
+     * @return Character at offset before incrementing
+     */
     public char increment(String s) {
         char curr = s.charAt(offset++);
         col += 1;
@@ -40,6 +46,11 @@ public class Location implements Cloneable {
         return curr;
     }
 
+    /**
+     * Increments the location to the next character
+     *
+     * @param c The current character the location is at
+     */
     public void increment(char c) {
         offset += 1;
         col += 1;
@@ -53,9 +64,14 @@ public class Location implements Cloneable {
         return s.charAt(offset);
     }
 
-    public void bringTo(Location loc) {
+    /**
+     * Copies the values of {@code loc} into this object
+     */
+    public Location bringTo(Location loc) {
         this.offset = loc.offset;
         this.line = loc.line;
         this.col = loc.col;
+
+        return this;
     }
 }

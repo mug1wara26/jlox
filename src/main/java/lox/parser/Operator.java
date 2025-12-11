@@ -4,9 +4,9 @@ import lox.TokenType;
 
 abstract class Operator {
     final TokenType operator;
-    // Left binding power
+    /** Left binding power */
     final int lbp;
-    // Right binding power
+    /** Right binding power */
     final int rbp;
 
     Operator(TokenType operator, int lbp, int rbp) {

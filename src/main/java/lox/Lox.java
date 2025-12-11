@@ -33,6 +33,9 @@ public class Lox {
         }
     }
 
+    /**
+     * Reads from a file and runs the interpreter against the text in the file.
+     */
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
@@ -43,6 +46,9 @@ public class Lox {
             System.exit(70);
     }
 
+    /**
+     * Starts the REPL using stdin
+     */
     private static void runPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -57,6 +63,11 @@ public class Lox {
         }
     }
 
+    /**
+     * Runs the interpreter against the source code provided.
+     * 
+     * @param source Lox code to run
+     */
     private static void run(String source) {
         logger.log(Logger.Level.INFO, "Running source:\n" + source);
 
@@ -72,10 +83,26 @@ public class Lox {
         }
     }
 
+    /**
+     * Reports an error at the location provided using the message provided.
+     * 
+     * Use {@code error(Token token, String message)} to report an error along with
+     * the offending token.
+     * 
+     * @param loc     The location of the error
+     * @param message The error message to report
+     */
     public static void error(Location loc, String message) {
         report(loc, "", message);
     }
 
+    /**
+     * Reports an error at the location provided, along with the offending token and
+     * the message provided.
+     * 
+     * @param token   The token that caused the error
+     * @param message The error message to report
+     */
     public static void error(Token token, String message) {
         if (token.type == TokenType.EOF) {
             report(token.loc, "at end", message);

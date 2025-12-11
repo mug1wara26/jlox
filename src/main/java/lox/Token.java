@@ -2,6 +2,10 @@ package lox;
 
 import lox.scanner.Location;
 
+/**
+ * Represents tokens in Lox code, tracks the corresponding type, lexeme, value,
+ * and location.
+ */
 public class Token {
     public final TokenType type;
     public final String lexeme;

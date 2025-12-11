@@ -6,6 +6,14 @@ import java.util.Optional;
 
 import lox.TokenType;
 
+/**
+ * Keeps track of operators and automatically assigns binding power to them.
+ * <br/>
+ * Operators will always be first assigned an odd binding power for the weakest
+ * side.
+ * <br/>
+ * Operators are inserted into the registry in increasing order of precedence.
+ */
 public class OperatorRegistry {
     private int power = 1;
     private Map<TokenType, Operator.InfixOperator> infixOperators = new HashMap<>();

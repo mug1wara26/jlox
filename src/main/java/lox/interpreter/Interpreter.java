@@ -19,6 +19,11 @@ import java.util.List;
 import lox.Lox;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    /**
+     * Loops over statements and interprets them using a tree walking interpreter.
+     * 
+     * @param statements The {@link Stmt}s to interpret
+     */
     public void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
