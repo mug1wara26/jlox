@@ -11,6 +11,7 @@ import lox.ast.Expr.TemplateLiteral;
 import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
 import lox.ast.Expr.Variable;
+import lox.ast.Stmt.Block;
 import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
@@ -22,7 +23,6 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         StringBuilder sb = new StringBuilder();
         stmts.forEach(x -> {
             sb.append('\n');
-            depth = 0;
             sb.append(x.accept(this));
         });
 
@@ -31,12 +31,10 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     }
 
     public String print(Stmt stmt) {
-        depth = 0;
         return stmt.accept(this);
     }
 
     public String print(Expr expr) {
-        depth = 0;
         return expr.accept(this);
     }
 
@@ -88,7 +86,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitVarStmt(Var stmt) {
-        return tree("Var Decl", stmt.initializer);
+        return tree("Var Decl " + stmt.name.lexeme, stmt.initializer);
     }
 
     @Override
@@ -99,6 +97,13 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitAssignExpr(Assign expr) {
         return tree(expr.identifier.lexeme + " =", expr.value);
+    }
+
+    @Override
+    public String visitBlockStmt(Block stmt) {
+        String s = tree("Block\n");
+        depth += 1;
+        return s + print(stmt.statements);
     }
 
     private void appendDepth(StringBuilder sb) {

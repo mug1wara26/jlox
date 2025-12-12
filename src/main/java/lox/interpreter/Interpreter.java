@@ -1,6 +1,7 @@
 package lox.interpreter;
 
 import lox.ast.Stmt;
+import lox.ast.Stmt.Block;
 import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
@@ -22,7 +23,7 @@ import java.util.List;
 import lox.Lox;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment();
+    private Environment environment = new Environment(Environment.GLOBAL_ENVIRONMENT);
 
     /**
      * Loops over statements and interprets them using a tree walking interpreter.
@@ -41,6 +42,20 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    private void executeBlock(List<Stmt> statements, Environment new_environment) {
+        Environment previous = environment;
+
+        try {
+            environment = new_environment;
+
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            environment = previous;
+        }
     }
 
     private Object evaluate(Expr expr) {
@@ -185,5 +200,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         environment.assign(expr.identifier, value);
 
         return value;
+    }
+
+    @Override
+    public Void visitBlockStmt(Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
     }
 }

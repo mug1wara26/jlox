@@ -50,13 +50,15 @@ public class Parser {
 
     private Stmt statement() {
         try {
-            if (match(PRINT, VAR)) {
+            if (match(PRINT, VAR, LEFT_BRACE)) {
                 TokenType prev_type = previous().type;
                 switch (prev_type) {
                     case VAR:
                         return varDeclaration();
                     case PRINT:
                         return printStatement();
+                    case LEFT_BRACE:
+                        return blockStatement();
                     default:
                         break;
                 }
@@ -69,7 +71,18 @@ public class Parser {
         }
     }
 
-    private Stmt varDeclaration() {
+    private Stmt.Block blockStatement() {
+        List<Stmt> statements = new ArrayList<>();
+
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(statement());
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' at end of block.");
+        return new Stmt.Block(statements);
+    }
+
+    private Stmt.Var varDeclaration() {
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
         Expr initializer = null;
@@ -81,13 +94,13 @@ public class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    private Stmt printStatement() {
+    private Stmt.Print printStatement() {
         Expr value = expr();
         consume(SEMICOLON, "Expect ; after value.");
         return new Stmt.Print(value);
     }
 
-    private Stmt expressionStatement() {
+    private Stmt.Expression expressionStatement() {
         Expr value = expr();
         consume(SEMICOLON, "Expect ; after value.");
         return new Stmt.Expression(value);

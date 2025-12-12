@@ -13,7 +13,7 @@ public class Location implements Cloneable {
 
     public Location() {
         this.offset = 0;
-        this.line = 0;
+        this.line = 1;
         this.col = 0;
     }
 

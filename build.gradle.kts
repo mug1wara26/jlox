@@ -26,6 +26,8 @@ tasks.named<JavaExec>("run") {
     jvmArgs("-Djava.util.logging.config.file=$loggingConfig")
 
     standardInput = System.`in`
+
+    enableAssertions = true
 }
 
 tasks.jar {
