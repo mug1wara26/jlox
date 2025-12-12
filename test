@@ -1,4 +1,3 @@
-test;
-print "one";
+print 1+;
 print true;
 print "abc ${"d" + "ef ${3*3}" + 10}";

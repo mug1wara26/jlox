@@ -6,6 +6,7 @@ import lox.Token;
 
 public abstract class Expr {
   public interface Visitor<R> {
+    R visitAssignExpr(Assign expr);
     R visitTernaryExpr(Ternary expr);
     R visitBinaryExpr(Binary expr);
     R visitGroupingExpr(Grouping expr);
@@ -13,6 +14,21 @@ public abstract class Expr {
     R visitTemplateLiteralExpr(TemplateLiteral expr);
     R visitStringTemplateExpr(StringTemplate expr);
     R visitUnaryExpr(Unary expr);
+    R visitVariableExpr(Variable expr);
+  }
+  public static class Assign extends Expr {
+    public Assign(Expr.Variable identifier, Expr value) {
+      this.identifier = identifier;
+      this.value = value;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitAssignExpr(this);
+    }
+
+    public final Expr.Variable identifier;
+    public final Expr value;
   }
   public static class Ternary extends Expr {
     public Ternary(Expr left, Token operator1, Expr mid, Token operator2, Expr right) {
@@ -111,6 +127,18 @@ public abstract class Expr {
 
     public final Token operator;
     public final Expr right;
+  }
+  public static class Variable extends Expr {
+    public Variable(Token name) {
+      this.name = name;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitVariableExpr(this);
+    }
+
+    public final Token name;
   }
 
   public abstract <R> R accept(Visitor<R> visitor);

@@ -3,7 +3,9 @@ package lox.interpreter;
 import lox.ast.Stmt;
 import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.Print;
+import lox.ast.Stmt.Var;
 import lox.ast.Expr;
+import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
@@ -11,6 +13,7 @@ import lox.ast.Expr.StringTemplate;
 import lox.ast.Expr.TemplateLiteral;
 import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
+import lox.ast.Expr.Variable;
 
 import static lox.interpreter.InterpreterUtil.*;
 
@@ -156,5 +159,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitPrintStmt(Print stmt) {
         System.out.println(stringify(evaluate(stmt.expression)));
         return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Var stmt) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitVarStmt'");
+    }
+
+    @Override
+    public Object visitVariableExpr(Variable expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
+    }
+
+    @Override
+    public Object visitAssignExpr(Assign expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
     }
 }

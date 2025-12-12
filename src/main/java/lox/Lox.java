@@ -74,15 +74,16 @@ public class Lox {
 
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        logger.log(Logger.Level.INFO, "Tokens:" + tokens);
+        logger.log(Logger.Level.DEBUG, "Tokens:" + tokens);
 
         try {
 
             Parser parser = new Parser(tokens);
             List<Stmt> result = parser.parse();
-            logger.log(Logger.Level.INFO, "AST:" + new AstPrinter().print(result));
+            logger.log(Logger.Level.DEBUG, "AST:" + new AstPrinter().print(result));
             new Interpreter().interpret(result);
         } catch (ParseError e) {
+            logger.log(Logger.Level.INFO, "Parser encountered an error:\n" + e.getMessage());
         }
     }
 

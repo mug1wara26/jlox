@@ -11,17 +11,20 @@ public class GenerateAst {
 
     public static void main(String[] args) throws IOException {
         defineAst(OUTPUT_DIR, "Expr", Arrays.asList(
+                "Assign         : Expr.Variable identifier, Expr value",
                 "Ternary        : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
                 "Binary         : Expr left, Token operator, Expr right",
                 "Grouping       : Expr expression",
                 "Literal        : Object value",
                 "TemplateLiteral: Expr expression",
                 "StringTemplate : List<Expr> templates",
-                "Unary          : Token operator, Expr right"));
+                "Unary          : Token operator, Expr right",
+                "Variable       : Token name"));
 
         defineAst(OUTPUT_DIR, "Stmt", Arrays.asList(
                 "Expression : Expr expression",
-                "Print      : Expr expression"));
+                "Print      : Expr expression",
+                "Var        : Token name, Expr initializer"));
     }
 
     private static void defineAst(

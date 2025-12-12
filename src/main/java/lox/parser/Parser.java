@@ -16,12 +16,16 @@ public class Parser {
     private final static OperatorRegistry OPERATOR_REGISTRY = new OperatorRegistry();
 
     public static class ParseError extends RuntimeException {
+        ParseError(String message) {
+            super(message);
+        }
     }
 
     private final List<Token> tokens;
     private int current = 0;
 
     static {
+        OPERATOR_REGISTRY.registerRightInfixOperator(EQUAL);
         OPERATOR_REGISTRY.registerLeftInfixOperator(COMMA);
         OPERATOR_REGISTRY.registerRightInfixOperator(QUESTION_MARK);
         OPERATOR_REGISTRY.registerLeftInfixOperator(BANG_EQUAL, EQUAL_EQUAL);
@@ -35,7 +39,7 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public List<Stmt> parse() {
+    public List<Stmt> parse() throws ParseError {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(statement());
@@ -45,10 +49,36 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if (match(PRINT))
-            return printStatement();
+        try {
+            if (match(PRINT, VAR)) {
+                TokenType prev_type = previous().type;
+                switch (prev_type) {
+                    case VAR:
+                        return varDeclaration();
+                    case PRINT:
+                        return printStatement();
+                    default:
+                        break;
+                }
+            }
 
-        return expressionStatement();
+            return expressionStatement();
+        } catch (ParseError e) {
+            synchronize();
+            throw e;
+        }
+    }
+
+    private Stmt varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expr();
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initializer);
     }
 
     private Stmt printStatement() {
@@ -84,8 +114,10 @@ public class Parser {
     private Expr expr(int min_bp) {
         Token next = advance();
         Expr lhs = switch (next.type) {
-            case IDENTIFIER, NUMBER, STRING ->
+            case NUMBER, STRING ->
                 new Expr.Literal(next.literal);
+            case IDENTIFIER ->
+                new Expr.Variable(next);
             case INTERP_START -> {
                 Expr next_lhs = expr();
                 expect(INTERP_END);
@@ -150,6 +182,13 @@ public class Parser {
                         rhs = expr(infixOp.rbp);
                         lhs = new Expr.Ternary(lhs, op_token, mhs, colon_token, rhs);
                         break;
+                    case EQUAL:
+                        if (!(lhs instanceof Expr.Variable))
+                            throw error(op_token,
+                                    "Invalid assignment target, expected identifier on left hand side of EQUAL");
+
+                        rhs = expr(infixOp.rbp);
+                        lhs = new Expr.Assign((Expr.Variable) lhs, rhs);
                     default:
                         rhs = expr(infixOp.rbp);
                         lhs = new Expr.Binary(lhs, op_token, rhs);
@@ -213,6 +252,29 @@ public class Parser {
 
     private ParseError error(Token token, String message) {
         Lox.error(token, message);
-        return new ParseError();
+        return new ParseError(message);
+    }
+
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON)
+                return;
+
+            switch (peek().type) {
+                case CLASS:
+                case FUN:
+                case VAR:
+                case FOR:
+                case IF:
+                case WHILE:
+                case PRINT:
+                case RETURN:
+                    return;
+                default:
+                    advance();
+            }
+        }
     }
 }

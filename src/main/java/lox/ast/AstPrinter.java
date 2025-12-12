@@ -2,6 +2,7 @@ package lox.ast;
 
 import java.util.List;
 
+import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
@@ -9,8 +10,10 @@ import lox.ast.Expr.StringTemplate;
 import lox.ast.Expr.TemplateLiteral;
 import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
+import lox.ast.Expr.Variable;
 import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.Print;
+import lox.ast.Stmt.Var;
 
 public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     private int depth;
@@ -81,6 +84,21 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitPrintStmt(Print stmt) {
         return tree("Print", stmt.expression);
+    }
+
+    @Override
+    public String visitVarStmt(Var stmt) {
+        return tree("Var Decl", stmt.initializer);
+    }
+
+    @Override
+    public String visitVariableExpr(Variable expr) {
+        return tree("Identifier " + expr.name.lexeme);
+    }
+
+    @Override
+    public String visitAssignExpr(Assign expr) {
+        return tree("=", expr.identifier, expr.value);
     }
 
     private void appendDepth(StringBuilder sb) {
