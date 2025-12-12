@@ -11,7 +11,7 @@ public class GenerateAst {
 
     public static void main(String[] args) throws IOException {
         defineAst(OUTPUT_DIR, "Expr", Arrays.asList(
-                "Assign         : Expr.Variable identifier, Expr value",
+                "Assign         : Token identifier, Expr value",
                 "Ternary        : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
                 "Binary         : Expr left, Token operator, Expr right",
                 "Grouping       : Expr expression",
@@ -40,6 +40,7 @@ public class GenerateAst {
         writer.println("import lox.Token;");
         writer.println();
         writer.println("public abstract class " + baseName + " {");
+        writer.println("  private static final AstPrinter PRINTER = new AstPrinter();");
 
         defineVisitor(writer, baseName, types);
 
@@ -52,6 +53,12 @@ public class GenerateAst {
         // The base accept() method.
         writer.println();
         writer.println("  public abstract <R> R accept(Visitor<R> visitor);");
+
+        writer.println();
+        writer.println("  @Override");
+        writer.println("  public String toString() {");
+        writer.println("    return PRINTER.print(this);");
+        writer.println("  }");
 
         writer.println("}");
         writer.close();

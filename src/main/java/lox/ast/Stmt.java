@@ -5,6 +5,7 @@ import java.util.List;
 import lox.Token;
 
 public abstract class Stmt {
+  private static final AstPrinter PRINTER = new AstPrinter();
   public interface Visitor<R> {
     R visitExpressionStmt(Expression stmt);
     R visitPrintStmt(Print stmt);
@@ -50,4 +51,9 @@ public abstract class Stmt {
   }
 
   public abstract <R> R accept(Visitor<R> visitor);
+
+  @Override
+  public String toString() {
+    return PRINTER.print(this);
+  }
 }

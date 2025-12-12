@@ -157,7 +157,7 @@ public class Parser {
                 Expr rhs = expr(op.rbp);
                 yield new Expr.Unary(next, rhs);
             }
-            default -> throw error(next, "Unexpected token");
+            default -> throw error(next, "Unexpected token, got " + next.lexeme);
         };
 
         loop: while (true) {
@@ -188,7 +188,8 @@ public class Parser {
                                     "Invalid assignment target, expected identifier on left hand side of EQUAL");
 
                         rhs = expr(infixOp.rbp);
-                        lhs = new Expr.Assign((Expr.Variable) lhs, rhs);
+                        lhs = new Expr.Assign(((Expr.Variable) lhs).name, rhs);
+                        break;
                     default:
                         rhs = expr(infixOp.rbp);
                         lhs = new Expr.Binary(lhs, op_token, rhs);

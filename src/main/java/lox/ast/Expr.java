@@ -5,6 +5,7 @@ import java.util.List;
 import lox.Token;
 
 public abstract class Expr {
+  private static final AstPrinter PRINTER = new AstPrinter();
   public interface Visitor<R> {
     R visitAssignExpr(Assign expr);
     R visitTernaryExpr(Ternary expr);
@@ -17,7 +18,7 @@ public abstract class Expr {
     R visitVariableExpr(Variable expr);
   }
   public static class Assign extends Expr {
-    public Assign(Expr.Variable identifier, Expr value) {
+    public Assign(Token identifier, Expr value) {
       this.identifier = identifier;
       this.value = value;
     }
@@ -27,7 +28,7 @@ public abstract class Expr {
       return visitor.visitAssignExpr(this);
     }
 
-    public final Expr.Variable identifier;
+    public final Token identifier;
     public final Expr value;
   }
   public static class Ternary extends Expr {
@@ -142,4 +143,9 @@ public abstract class Expr {
   }
 
   public abstract <R> R accept(Visitor<R> visitor);
+
+  @Override
+  public String toString() {
+    return PRINTER.print(this);
+  }
 }

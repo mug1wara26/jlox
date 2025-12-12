@@ -22,6 +22,8 @@ import java.util.List;
 import lox.Lox;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    private Environment environment = new Environment();
+
     /**
      * Loops over statements and interprets them using a tree walking interpreter.
      * 
@@ -163,19 +165,25 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitVarStmt(Var stmt) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitVarStmt'");
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+
+        environment.define(stmt.name.lexeme, value);
+        return null;
     }
 
     @Override
     public Object visitVariableExpr(Variable expr) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
+        return environment.get(expr.name);
     }
 
     @Override
     public Object visitAssignExpr(Assign expr) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
+        Object value = evaluate(expr.value);
+        environment.assign(expr.identifier, value);
+
+        return value;
     }
 }

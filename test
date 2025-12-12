@@ -1,3 +1,6 @@
-print 1+;
-print true;
-print "abc ${"d" + "ef ${3*3}" + 10}";
+var a;
+print a;
+a = 1;
+print a;
+var x = 2;
+print x;

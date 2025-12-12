@@ -98,7 +98,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitAssignExpr(Assign expr) {
-        return tree("=", expr.identifier, expr.value);
+        return tree(expr.identifier.lexeme + " =", expr.value);
     }
 
     private void appendDepth(StringBuilder sb) {
@@ -118,7 +118,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
         for (Expr expr : exprs) {
             sb.append('\n');
-            sb.append(expr.accept(this));
+            sb.append(expr == null ? tree("null") : expr.accept(this));
         }
 
         if (exprs.length > 0)
