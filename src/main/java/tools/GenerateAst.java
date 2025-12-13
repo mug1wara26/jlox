@@ -27,6 +27,7 @@ public class GenerateAst {
                 "If         : Expr condition, Stmt consequent, Stmt alternate",
                 "Expression : Expr expression",
                 "Print      : Expr expression",
+                "While      : Expr condition, Stmt body",
                 "Var        : Token name, Expr initializer"));
     }
 

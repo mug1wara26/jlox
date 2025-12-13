@@ -6,6 +6,7 @@ import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
+import lox.ast.Stmt.While;
 import lox.ast.Expr;
 import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
@@ -233,6 +234,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             execute(stmt.consequent);
         else if (stmt.alternate != null)
             execute(stmt.alternate);
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(While stmt) {
+        while (isTruthy(evaluate(stmt.condition)))
+            execute(stmt.body);
+
         return null;
     }
 }

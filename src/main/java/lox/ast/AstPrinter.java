@@ -17,6 +17,7 @@ import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
+import lox.ast.Stmt.While;
 
 public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     private int depth;
@@ -110,12 +111,30 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     public String visitBlockStmt(Block stmt) {
         String s = tree("Block\n");
         depth += 1;
-        return s + print(stmt.statements);
+        s += print(stmt.statements);
+        depth -= 1;
+
+        return s;
     }
 
     @Override
     public String visitIfStmt(If stmt) {
-        return tree("if", stmt.condition) + '\n' + print(stmt.consequent) + '\n' + print(stmt.alternate);
+        String s = tree("if", stmt.condition) + '\n';
+        depth += 1;
+        s += print(stmt.consequent) + '\n' + print(stmt.alternate);
+        depth -= 1;
+
+        return s;
+    }
+
+    @Override
+    public String visitWhileStmt(While stmt) {
+        String s = tree("while", stmt.condition);
+        depth += 1;
+        s += print(stmt.body);
+        depth -= 1;
+
+        return s;
     }
 
     private void appendDepth(StringBuilder sb) {

@@ -70,7 +70,7 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if (match(PRINT, LEFT_BRACE, IF)) {
+        if (match(PRINT, LEFT_BRACE, IF, WHILE)) {
             TokenType prev_type = previous().type;
             switch (prev_type) {
                 case PRINT:
@@ -79,12 +79,24 @@ public class Parser {
                     return blockStatement();
                 case IF:
                     return ifStatement();
+                case WHILE:
+                    return whileStatement();
                 default:
                     break;
             }
         }
 
         return expressionStatement();
+    }
+
+    private Stmt whileStatement() {
+        consume(LEFT_PAREN, "Expect '(' after if.");
+        Expr condition = expr();
+        consume(RIGHT_PAREN, "Expect closing ')'.");
+
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
     }
 
     private Stmt ifStatement() {
