@@ -11,6 +11,7 @@ import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
+import lox.ast.Expr.Logical;
 import lox.ast.Expr.StringTemplate;
 import lox.ast.Expr.TemplateLiteral;
 import lox.ast.Expr.Ternary;
@@ -22,6 +23,7 @@ import static lox.interpreter.InterpreterUtil.*;
 import java.util.List;
 
 import lox.Lox;
+import lox.TokenType;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment(Environment.GLOBAL_ENVIRONMENT);
@@ -165,6 +167,22 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             sb.append(stringify(evaluate(e)));
 
         return sb.toString();
+    }
+
+    @Override
+    public Object visitLogicalExpr(Logical expr) {
+        // Similar to lisp style, return false if the logical expr evaluates to false
+        Object lhs = evaluate(expr.left);
+
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(lhs))
+                return lhs;
+        } else if (!isTruthy(lhs))
+            return false;
+
+        Object rhs = evaluate(expr.right);
+
+        return isTruthy(rhs) ? rhs : false;
     }
 
     @Override

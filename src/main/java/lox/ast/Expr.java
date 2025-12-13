@@ -10,6 +10,7 @@ public abstract class Expr {
     R visitAssignExpr(Assign expr);
     R visitTernaryExpr(Ternary expr);
     R visitBinaryExpr(Binary expr);
+    R visitLogicalExpr(Logical expr);
     R visitGroupingExpr(Grouping expr);
     R visitLiteralExpr(Literal expr);
     R visitTemplateLiteralExpr(TemplateLiteral expr);
@@ -61,6 +62,22 @@ public abstract class Expr {
     @Override
     public <R> R accept(Visitor<R> visitor) {
       return visitor.visitBinaryExpr(this);
+    }
+
+    public final Expr left;
+    public final Token operator;
+    public final Expr right;
+  }
+  public static class Logical extends Expr {
+    public Logical(Expr left, Token operator, Expr right) {
+      this.left = left;
+      this.operator = operator;
+      this.right = right;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitLogicalExpr(this);
     }
 
     public final Expr left;
