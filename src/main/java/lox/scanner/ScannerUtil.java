@@ -29,6 +29,8 @@ class ScannerUtil {
         KEYWORDS.put("true", TRUE);
         KEYWORDS.put("var", VAR);
         KEYWORDS.put("while", WHILE);
+        KEYWORDS.put("break", BREAK);
+        KEYWORDS.put("continue", CONTINUE);
 
         ESCAPE_CHARACTERS.put('\"', '"');
         ESCAPE_CHARACTERS.put('{', '{');

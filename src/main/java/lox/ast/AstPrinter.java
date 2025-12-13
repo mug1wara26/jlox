@@ -13,6 +13,8 @@ import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
 import lox.ast.Expr.Variable;
 import lox.ast.Stmt.Block;
+import lox.ast.Stmt.Break;
+import lox.ast.Stmt.Continue;
 import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
@@ -142,6 +144,16 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
             sb.append("  ");
         if (depth > 0)
             sb.append("| ");
+    }
+
+    @Override
+    public String visitBreakStmt(Break stmt) {
+        return tree("Break");
+    }
+
+    @Override
+    public String visitContinueStmt(Continue stmt) {
+        return tree("Continue");
     }
 
     private String tree(String name, Expr... exprs) {

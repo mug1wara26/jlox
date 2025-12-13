@@ -2,6 +2,8 @@ package lox.interpreter;
 
 import lox.ast.Stmt;
 import lox.ast.Stmt.Block;
+import lox.ast.Stmt.Break;
+import lox.ast.Stmt.Continue;
 import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
@@ -24,10 +26,14 @@ import static lox.interpreter.InterpreterUtil.*;
 import java.util.List;
 
 import lox.Lox;
+import lox.Token;
 import lox.TokenType;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment(Environment.GLOBAL_ENVIRONMENT);
+    int loop_depth = 0;
+    boolean is_break_executed = false;
+    boolean is_contunue_executed = false;
 
     /**
      * Loops over statements and interprets them using a tree walking interpreter.
@@ -56,6 +62,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
             for (Stmt statement : statements) {
                 execute(statement);
+
+                if (is_break_executed || is_contunue_executed) {
+                    break;
+                }
             }
         } finally {
             environment = previous;
@@ -239,9 +249,38 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(While stmt) {
-        while (isTruthy(evaluate(stmt.condition)))
+        loop_depth += 1;
+        while (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.body);
+            if (is_break_executed) {
+                is_break_executed = false;
+                break;
+            }
+            if (is_contunue_executed) {
+                is_contunue_executed = false;
+                continue;
+            }
+        }
+        loop_depth -= 1;
 
+        return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(Break stmt) {
+        if (loop_depth == 0) {
+            throw new RuntimeError(stmt.keyword, "break not allowed outside of loop.");
+        }
+        is_break_executed = true;
+        return null;
+    }
+
+    @Override
+    public Void visitContinueStmt(Continue stmt) {
+        if (loop_depth == 0) {
+            throw new RuntimeError(stmt.keyword, "continue not allowed outside of loop.");
+        }
+        is_contunue_executed = true;
         return null;
     }
 }

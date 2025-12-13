@@ -28,6 +28,8 @@ public class GenerateAst {
                 "Expression : Expr expression",
                 "Print      : Expr expression",
                 "While      : Expr condition, Stmt body",
+                "Break      : Token keyword",
+                "Continue   : Token keyword",
                 "Var        : Token name, Expr initializer"));
     }
 
@@ -80,8 +82,10 @@ public class GenerateAst {
         // Store parameters in fields.
         String[] fields = fieldList.split(", ");
         for (String field : fields) {
-            String name = field.split(" ")[1];
-            writer.println("      this." + name + " = " + name + ";");
+            if (field.length() != 0) {
+                String name = field.split(" ")[1];
+                writer.println("      this." + name + " = " + name + ";");
+            }
         }
 
         writer.println("    }");
@@ -97,7 +101,8 @@ public class GenerateAst {
         // Fields.
         writer.println();
         for (String field : fields) {
-            writer.println("    public final " + field + ";");
+            if (field.length() != 0)
+                writer.println("    public final " + field + ";");
         }
 
         writer.println("  }");

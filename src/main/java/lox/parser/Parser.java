@@ -1,6 +1,7 @@
 package lox.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,7 +71,7 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if (match(PRINT, LEFT_BRACE, IF, WHILE)) {
+        if (match(PRINT, LEFT_BRACE, IF, WHILE, FOR, BREAK, CONTINUE)) {
             TokenType prev_type = previous().type;
             switch (prev_type) {
                 case PRINT:
@@ -81,6 +82,12 @@ public class Parser {
                     return ifStatement();
                 case WHILE:
                     return whileStatement();
+                case FOR:
+                    return forStatement();
+                case BREAK:
+                    return breakStatement();
+                case CONTINUE:
+                    return continueStatement();
                 default:
                     break;
             }
@@ -89,8 +96,37 @@ public class Parser {
         return expressionStatement();
     }
 
+    private Stmt forStatement() {
+        consume(LEFT_PAREN, "Expect '(' after for.");
+        Stmt init = null;
+        if (!match(SEMICOLON))
+            init = match(VAR) ? varDeclaration() : expressionStatement();
+
+        Expr condition = new Expr.Literal(true);
+        if (!match(SEMICOLON))
+            condition = expr();
+        consume(SEMICOLON, "Expect ';' after condition in for loop.");
+
+        Expr update = null;
+        if (!match(SEMICOLON))
+            update = expr();
+        consume(RIGHT_PAREN, "Expect ')' after update in for loop.");
+
+        Stmt body = statement();
+
+        if (update != null)
+            body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(update)));
+
+        body = new Stmt.While(condition, body);
+
+        if (init != null)
+            body = new Stmt.Block(Arrays.asList(init, body));
+
+        return body;
+    }
+
     private Stmt whileStatement() {
-        consume(LEFT_PAREN, "Expect '(' after if.");
+        consume(LEFT_PAREN, "Expect '(' after while.");
         Expr condition = expr();
         consume(RIGHT_PAREN, "Expect closing ')'.");
 
@@ -108,6 +144,18 @@ public class Parser {
         Stmt alternate = match(ELSE) ? statement() : null;
 
         return new Stmt.If(condition, consequent, alternate);
+    }
+
+    private Stmt breakStatement() {
+        Token keyword = previous();
+        consume(SEMICOLON, "Expect ; after break.");
+        return new Stmt.Break(keyword);
+    }
+
+    private Stmt continueStatement() {
+        Token keyword = previous();
+        consume(SEMICOLON, "Expect ; after continue.");
+        return new Stmt.Continue(keyword);
     }
 
     private Stmt.Block blockStatement() {
