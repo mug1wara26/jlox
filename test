@@ -1,2 +1,5 @@
-var a = 1;
-print a == 1 ? "a is 1" : "explode";
+var a = 10;
+if (a > 5)
+  print "yes";
+else
+  print "no";

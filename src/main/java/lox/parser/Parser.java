@@ -44,41 +44,53 @@ public class Parser {
     public List<Stmt> parse() throws ParseError {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
 
         return statements;
     }
 
-    private Stmt statement() {
+    private Stmt declaration() {
         try {
-            if (match(PRINT, VAR, LEFT_BRACE)) {
+            if (match(VAR)) {
                 TokenType prev_type = previous().type;
                 switch (prev_type) {
                     case VAR:
                         return varDeclaration();
-                    case PRINT:
-                        return printStatement();
-                    case LEFT_BRACE:
-                        return blockStatement();
-                    case IF:
-                        return ifStatement();
                     default:
                         break;
                 }
             }
 
-            return expressionStatement();
+            return statement();
         } catch (ParseError e) {
             synchronize();
             throw e;
         }
     }
 
+    private Stmt statement() {
+        if (match(PRINT, LEFT_BRACE, IF)) {
+            TokenType prev_type = previous().type;
+            switch (prev_type) {
+                case PRINT:
+                    return printStatement();
+                case LEFT_BRACE:
+                    return blockStatement();
+                case IF:
+                    return ifStatement();
+                default:
+                    break;
+            }
+        }
+
+        return expressionStatement();
+    }
+
     private Stmt ifStatement() {
-        consume(LEFT_BRACE, "Expect '(' after if.");
+        consume(LEFT_PAREN, "Expect '(' after if.");
         Expr condition = expr();
-        consume(RIGHT_BRACE, "Expect closing ')'.");
+        consume(RIGHT_PAREN, "Expect closing ')'.");
 
         Stmt consequent = statement();
         Stmt alternate = match(ELSE) ? statement() : null;
@@ -90,7 +102,7 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
 
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
 
         consume(RIGHT_BRACE, "Expect '}' at end of block.");
