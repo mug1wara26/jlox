@@ -36,6 +36,7 @@ public class Parser {
         OPERATOR_REGISTRY.registerLeftInfixOperator(PLUS, MINUS);
         OPERATOR_REGISTRY.registerLeftInfixOperator(STAR, SLASH);
         OPERATOR_REGISTRY.registerPrefixOperator(BANG, MINUS);
+        OPERATOR_REGISTRY.registerPostfixOperator(LEFT_PAREN);
     }
 
     public Parser(List<Token> tokens) {
@@ -264,11 +265,20 @@ public class Parser {
             if (isAtEnd())
                 break;
 
+            Optional<Operator.PostfixOperator> postOp = OPERATOR_REGISTRY.getPostfixOperator(peek().type);
+            if ((postOp).isPresent()) {
+                Operator.PostfixOperator op = postOp.get();
+                if (op.lbp < min_bp)
+                    break;
+                
+                Token op_token = advance();
+            }
+
             Optional<Operator.InfixOperator> op = OPERATOR_REGISTRY.getInfixOperator(peek().type);
             if (op.isPresent()) {
                 Operator.InfixOperator infixOp = op.get();
                 if (infixOp.lbp < min_bp) {
-                    break loop;
+                    break;
                 }
 
                 Token op_token = advance();
