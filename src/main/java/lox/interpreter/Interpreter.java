@@ -3,6 +3,7 @@ package lox.interpreter;
 import lox.ast.Stmt;
 import lox.ast.Stmt.Block;
 import lox.ast.Stmt.Expression;
+import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
 import lox.ast.Expr;
@@ -205,6 +206,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitBlockStmt(Block stmt) {
         executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(If stmt) {
+        if (isTruthy(evaluate(stmt.condition)))
+            execute(stmt.consequent);
+        else if (stmt.alternate != null)
+            execute(stmt.alternate);
         return null;
     }
 }

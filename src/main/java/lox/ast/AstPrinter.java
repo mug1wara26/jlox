@@ -13,6 +13,7 @@ import lox.ast.Expr.Unary;
 import lox.ast.Expr.Variable;
 import lox.ast.Stmt.Block;
 import lox.ast.Stmt.Expression;
+import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
 
@@ -104,6 +105,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         String s = tree("Block\n");
         depth += 1;
         return s + print(stmt.statements);
+    }
+
+    @Override
+    public String visitIfStmt(If stmt) {
+        return tree("if", stmt.condition) + '\n' + print(stmt.consequent) + '\n' + print(stmt.alternate);
     }
 
     private void appendDepth(StringBuilder sb) {

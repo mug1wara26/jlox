@@ -59,6 +59,8 @@ public class Parser {
                         return printStatement();
                     case LEFT_BRACE:
                         return blockStatement();
+                    case IF:
+                        return ifStatement();
                     default:
                         break;
                 }
@@ -69,6 +71,17 @@ public class Parser {
             synchronize();
             throw e;
         }
+    }
+
+    private Stmt ifStatement() {
+        consume(LEFT_BRACE, "Expect '(' after if.");
+        Expr condition = expr();
+        consume(RIGHT_BRACE, "Expect closing ')'.");
+
+        Stmt consequent = statement();
+        Stmt alternate = match(ELSE) ? statement() : null;
+
+        return new Stmt.If(condition, consequent, alternate);
     }
 
     private Stmt.Block blockStatement() {
