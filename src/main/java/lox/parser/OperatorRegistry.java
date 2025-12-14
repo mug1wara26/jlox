@@ -56,6 +56,10 @@ public class OperatorRegistry {
         increasePower();
     }
 
+    int getLeftInfixBindingPower(TokenType token) {
+        return Optional.ofNullable(infixOperators.get(token)).map(x -> x.lbp).orElse(0);
+    }
+
     Optional<Operator.InfixOperator> getInfixOperator(TokenType token) {
         return Optional.ofNullable(infixOperators.get(token));
     }

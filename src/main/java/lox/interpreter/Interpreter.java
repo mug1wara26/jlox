@@ -12,6 +12,7 @@ import lox.ast.Stmt.While;
 import lox.ast.Expr;
 import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
+import lox.ast.Expr.Call;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
 import lox.ast.Expr.Logical;
@@ -26,7 +27,6 @@ import static lox.interpreter.InterpreterUtil.*;
 import java.util.List;
 
 import lox.Lox;
-import lox.Token;
 import lox.TokenType;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
@@ -282,5 +282,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         is_contunue_executed = true;
         return null;
+    }
+
+    @Override
+    public Object visitCallExpr(Call expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitCallExpr'");
     }
 }

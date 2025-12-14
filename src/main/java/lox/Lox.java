@@ -81,7 +81,7 @@ public class Lox {
             Parser parser = new Parser(tokens);
             List<Stmt> result = parser.parse();
             logger.log(Logger.Level.DEBUG, "AST:\n" + new AstPrinter().print(result));
-            new Interpreter().interpret(result);
+            // new Interpreter().interpret(result);
         } catch (ParseError e) {
             logger.log(Logger.Level.INFO, "Parser encountered an error:\n" + e.getMessage());
         }

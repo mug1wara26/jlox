@@ -1,9 +1,12 @@
 package lox.ast;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
+import lox.ast.Expr.Call;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
 import lox.ast.Expr.Logical;
@@ -137,6 +140,15 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         depth -= 1;
 
         return s;
+    }
+
+    @Override
+    public String visitCallExpr(Call expr) {
+        List<Expr> exprs = new ArrayList<>();
+        exprs.add(expr.callee);
+        exprs.addAll(expr.arguments);
+
+        return tree("call", exprs.toArray(new Expr[] {}));
     }
 
     private void appendDepth(StringBuilder sb) {

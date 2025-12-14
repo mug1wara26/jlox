@@ -261,7 +261,7 @@ public class Parser {
             default -> throw error(next, "Unexpected token, got " + next.lexeme);
         };
 
-        loop: while (true) {
+        while (true) {
             if (isAtEnd())
                 break;
 
@@ -270,26 +270,45 @@ public class Parser {
                 Operator.PostfixOperator op = postOp.get();
                 if (op.lbp < min_bp)
                     break;
-                
+
                 Token op_token = advance();
+
+                switch (op_token.type) {
+                    case LEFT_PAREN:
+                        List<Expr> arguments = new ArrayList<>();
+                        if (!check(RIGHT_PAREN)) {
+                            do {
+                                if (arguments.size() >= 255)
+                                    error(peek(), "Can't have more than 255 arguments.");
+                                arguments.add(expr(OPERATOR_REGISTRY.getLeftInfixBindingPower(COMMA) + 1));
+                            } while (match(COMMA));
+                        }
+
+                        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+                        lhs = new Expr.Call(lhs, paren, arguments);
+                        continue;
+
+                    default:
+                        throw error(op_token, "Unexpected postfix operator, got " + next.lexeme);
+                }
             }
 
-            Optional<Operator.InfixOperator> op = OPERATOR_REGISTRY.getInfixOperator(peek().type);
-            if (op.isPresent()) {
-                Operator.InfixOperator infixOp = op.get();
-                if (infixOp.lbp < min_bp) {
+            Optional<Operator.InfixOperator> infixOp = OPERATOR_REGISTRY.getInfixOperator(peek().type);
+            if (infixOp.isPresent()) {
+                Operator.InfixOperator op = infixOp.get();
+                if (op.lbp < min_bp) {
                     break;
                 }
 
                 Token op_token = advance();
                 Expr rhs = null;
 
-                switch (infixOp.operator) {
+                switch (op.operator) {
                     case QUESTION_MARK:
                         Expr mhs = expr();
                         expect(COLON);
                         Token colon_token = previous();
-                        rhs = expr(infixOp.rbp);
+                        rhs = expr(op.rbp);
                         lhs = new Expr.Ternary(lhs, op_token, mhs, colon_token, rhs);
                         break;
                     case EQUAL:
@@ -297,11 +316,11 @@ public class Parser {
                             throw error(op_token,
                                     "Invalid assignment target, expected identifier on left hand side of EQUAL");
 
-                        rhs = expr(infixOp.rbp);
+                        rhs = expr(op.rbp);
                         lhs = new Expr.Assign(((Expr.Variable) lhs).name, rhs);
                         break;
                     default:
-                        rhs = expr(infixOp.rbp);
+                        rhs = expr(op.rbp);
                         lhs = new Expr.Binary(lhs, op_token, rhs);
                         break;
                 }
