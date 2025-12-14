@@ -126,7 +126,10 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     public String visitIfStmt(If stmt) {
         String s = tree("if", stmt.condition) + '\n';
         depth += 1;
-        s += print(stmt.consequent) + '\n' + print(stmt.alternate);
+        s += print(stmt.consequent);
+
+        if (stmt.alternate != null)
+            s += '\n' + print(stmt.alternate);
         depth -= 1;
 
         return s;

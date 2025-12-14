@@ -60,6 +60,46 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
         });
 
+        global_environment.define("arrayLength", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                if (!(arguments.get(0) instanceof Object[]))
+                    throw new RuntimeError("First argument of arrayLength must be an array.");
+
+                return (double) ((Object[]) arguments.get(0)).length;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
+        global_environment.define("floor", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                if (!(arguments.get(0) instanceof Double))
+                    throw new RuntimeError("First argument of arrayLength must be an array.");
+
+                return Math.floor((Double) arguments.get(0));
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
         global_environment.define("stringSplit", new LoxCallable() {
             @Override
             public int arity() {
