@@ -81,7 +81,7 @@ public class Lox {
             Parser parser = new Parser(tokens);
             List<Stmt> result = parser.parse();
             logger.log(Logger.Level.DEBUG, "AST:\n" + new AstPrinter().print(result));
-            // new Interpreter().interpret(result);
+            new Interpreter().interpret(result);
         } catch (ParseError e) {
             logger.log(Logger.Level.INFO, "Parser encountered an error:\n" + e.getMessage());
         }
@@ -122,9 +122,12 @@ public class Lox {
     }
 
     public static void runtimeError(RuntimeError error) {
-        System.err.println(
-                String.format("%s\n[line: %d, col: %d]", error.getMessage(), error.token.loc.line(),
-                        error.token.loc.col()));
+        if (error.token == null)
+            System.err.println(error.getMessage());
+        else
+            System.err.println(
+                    String.format("%s\n[line: %d, col: %d]", error.getMessage(), error.token.loc.line(),
+                            error.token.loc.col()));
         hadRuntimeError = true;
     }
 

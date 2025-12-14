@@ -7,15 +7,17 @@ import lox.Token;
 
 public class Environment {
     final Environment enclosing;
-    final static Environment GLOBAL_ENVIRONMENT = new Environment(null);
     private final Map<String, Object> values = new HashMap<>();
+
+    Environment() {
+        this.enclosing = null;
+    }
 
     Environment(Environment enclosing) {
         this.enclosing = enclosing;
     }
 
     void define(String name, Object value) {
-        assert (enclosing != null);
         values.put(name, value);
     }
 

@@ -1,5 +1,7 @@
 package lox.interpreter;
 
+import java.util.Arrays;
+
 import lox.Token;
 
 public class InterpreterUtil {
@@ -39,6 +41,9 @@ public class InterpreterUtil {
             }
             return text;
         }
+
+        if (object instanceof Object[])
+            return Arrays.toString((Object[]) object);
 
         return object.toString();
     }

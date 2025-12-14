@@ -11,6 +11,7 @@ public abstract class Expr {
     R visitTernaryExpr(Ternary expr);
     R visitBinaryExpr(Binary expr);
     R visitCallExpr(Call expr);
+    R visitArrayAccessExpr(ArrayAccess expr);
     R visitLogicalExpr(Logical expr);
     R visitGroupingExpr(Grouping expr);
     R visitLiteralExpr(Literal expr);
@@ -84,6 +85,22 @@ public abstract class Expr {
     public final Expr callee;
     public final Token paren;
     public final List<Expr> arguments;
+  }
+  public static class ArrayAccess extends Expr {
+    public ArrayAccess(Expr array, Token square, Expr index) {
+      this.array = array;
+      this.square = square;
+      this.index = index;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitArrayAccessExpr(this);
+    }
+
+    public final Expr array;
+    public final Token square;
+    public final Expr index;
   }
   public static class Logical extends Expr {
     public Logical(Expr left, Token operator, Expr right) {

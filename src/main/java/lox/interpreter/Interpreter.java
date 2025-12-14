@@ -10,6 +10,7 @@ import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
 import lox.ast.Stmt.While;
 import lox.ast.Expr;
+import lox.ast.Expr.ArrayAccess;
 import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Call;
@@ -24,16 +25,108 @@ import lox.ast.Expr.Variable;
 
 import static lox.interpreter.InterpreterUtil.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import lox.Lox;
 import lox.TokenType;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment(Environment.GLOBAL_ENVIRONMENT);
+    private final Environment global_environment = new Environment();
+    private Environment environment = new Environment(global_environment);
     int loop_depth = 0;
     boolean is_break_executed = false;
     boolean is_contunue_executed = false;
+
+    public Interpreter() {
+        global_environment.define("clock", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double) System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
+        global_environment.define("stringSplit", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 2;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                if (!(arguments.get(0) instanceof String))
+                    throw new RuntimeError("First argument of stringSplit must be a string.");
+                if (!(arguments.get(1) instanceof String))
+                    throw new RuntimeError("Second argument of stringSplit must be a string.");
+
+                return ((String) arguments.get(0)).split((String) arguments.get(1));
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
+        global_environment.define("stringToNumber", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                if (!(arguments.get(0) instanceof String))
+                    throw new RuntimeError("First argument of stringSplit must be a string.");
+
+                return Double.valueOf((String) arguments.get(0));
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+
+        global_environment.define("read", new LoxCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                if (!(arguments.get(0) instanceof String))
+                    throw new RuntimeError("read function takes in a String file path.");
+                Path filePath = Paths.get((String) arguments.get(0));
+                try {
+                    String content = Files.readString(filePath);
+                    return content;
+                } catch (IOException e) {
+                    throw new RuntimeError("Could not open file " + arguments.get(0));
+                }
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+    }
 
     /**
      * Loops over statements and interprets them using a tree walking interpreter.
@@ -286,7 +379,39 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitCallExpr(Call expr) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitCallExpr'");
+        Object callee = evaluate(expr.callee);
+
+        if (!(callee instanceof LoxCallable))
+            throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expr argument : expr.arguments) {
+            arguments.add(evaluate(argument));
+        }
+
+        LoxCallable function = (LoxCallable) callee;
+        if (arguments.size() != function.arity())
+            throw new RuntimeError(expr.paren,
+                    String.format("Expected %d arguments but got %d.", function.arity(), arguments.size()));
+
+        return function.call(this, arguments);
+    }
+
+    @Override
+    public Object visitArrayAccessExpr(ArrayAccess expr) {
+        Object array = evaluate(expr.array);
+
+        if (!(array instanceof Object[]))
+            throw new RuntimeError(expr.square, "Expression is not indexable.");
+
+        Object index = evaluate(expr.index);
+
+        if (!(index instanceof Double))
+            throw new RuntimeError(expr.square, "Array index must be a number.");
+
+        if ((double) index % 1 != 0)
+            throw new RuntimeError(expr.square, "Array index must be a whole number.");
+
+        return ((Object[]) array)[(int) Math.round((double) index)];
     }
 }

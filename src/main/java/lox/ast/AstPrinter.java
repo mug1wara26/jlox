@@ -1,9 +1,9 @@
 package lox.ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import lox.ast.Expr.ArrayAccess;
 import lox.ast.Expr.Assign;
 import lox.ast.Expr.Binary;
 import lox.ast.Expr.Call;
@@ -151,13 +151,6 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         return tree("call", exprs.toArray(new Expr[] {}));
     }
 
-    private void appendDepth(StringBuilder sb) {
-        for (int i = 0; i < depth - 1; i++)
-            sb.append("  ");
-        if (depth > 0)
-            sb.append("| ");
-    }
-
     @Override
     public String visitBreakStmt(Break stmt) {
         return tree("Break");
@@ -166,6 +159,18 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitContinueStmt(Continue stmt) {
         return tree("Continue");
+    }
+
+    @Override
+    public String visitArrayAccessExpr(ArrayAccess expr) {
+        return tree("arrayAccess", expr.array, expr.index);
+    }
+
+    private void appendDepth(StringBuilder sb) {
+        for (int i = 0; i < depth - 1; i++)
+            sb.append("  ");
+        if (depth > 0)
+            sb.append("| ");
     }
 
     private String tree(String name, Expr... exprs) {

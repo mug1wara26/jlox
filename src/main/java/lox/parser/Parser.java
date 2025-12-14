@@ -36,6 +36,7 @@ public class Parser {
         OPERATOR_REGISTRY.registerLeftInfixOperator(PLUS, MINUS);
         OPERATOR_REGISTRY.registerLeftInfixOperator(STAR, SLASH);
         OPERATOR_REGISTRY.registerPrefixOperator(BANG, MINUS);
+        OPERATOR_REGISTRY.registerPostfixOperator(LEFT_SQUARE);
         OPERATOR_REGISTRY.registerPostfixOperator(LEFT_PAREN);
     }
 
@@ -287,7 +288,11 @@ public class Parser {
                         Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
                         lhs = new Expr.Call(lhs, paren, arguments);
                         continue;
-
+                    case LEFT_SQUARE:
+                        Expr index = expr();
+                        Token square = consume(RIGHT_SQUARE, "Expect ']' after array index.");
+                        lhs = new Expr.ArrayAccess(lhs, square, index);
+                        continue;
                     default:
                         throw error(op_token, "Unexpected postfix operator, got " + next.lexeme);
                 }
@@ -310,7 +315,7 @@ public class Parser {
                         Token colon_token = previous();
                         rhs = expr(op.rbp);
                         lhs = new Expr.Ternary(lhs, op_token, mhs, colon_token, rhs);
-                        break;
+                        continue;
                     case EQUAL:
                         if (!(lhs instanceof Expr.Variable))
                             throw error(op_token,
@@ -318,14 +323,14 @@ public class Parser {
 
                         rhs = expr(op.rbp);
                         lhs = new Expr.Assign(((Expr.Variable) lhs).name, rhs);
-                        break;
+                        continue;
                     default:
                         rhs = expr(op.rbp);
                         lhs = new Expr.Binary(lhs, op_token, rhs);
-                        break;
+                        continue;
                 }
             } else
-                // Infix op not found
+                // op not found
                 break;
         }
 

@@ -136,6 +136,12 @@ public class Scanner {
             case ':':
                 addToken(COLON);
                 break;
+            case '[':
+                addToken(LEFT_SQUARE);
+                break;
+            case ']':
+                addToken(RIGHT_SQUARE);
+                break;
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
