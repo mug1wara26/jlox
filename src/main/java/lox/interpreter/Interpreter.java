@@ -24,11 +24,8 @@ import lox.ast.Expr.Unary;
 import lox.ast.Expr.Variable;
 
 import static lox.interpreter.InterpreterUtil.*;
+import static lox.interpreter.LoxType.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,129 +40,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     boolean is_contunue_executed = false;
 
     public Interpreter() {
-        global_environment.define("clock", new LoxCallable() {
-            @Override
-            public int arity() {
-                return 0;
-            }
-
-            @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                return (double) System.currentTimeMillis() / 1000.0;
-            }
-
-            @Override
-            public String toString() {
-                return "<native fn>";
-            }
-        });
-
-        global_environment.define("arrayLength", new LoxCallable() {
-            @Override
-            public int arity() {
-                return 1;
-            }
-
-            @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                if (!(arguments.get(0) instanceof Object[]))
-                    throw new RuntimeError("First argument of arrayLength must be an array.");
-
-                return (double) ((Object[]) arguments.get(0)).length;
-            }
-
-            @Override
-            public String toString() {
-                return "<native fn>";
-            }
-        });
-
-        global_environment.define("floor", new LoxCallable() {
-            @Override
-            public int arity() {
-                return 1;
-            }
-
-            @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                if (!(arguments.get(0) instanceof Double))
-                    throw new RuntimeError("First argument of arrayLength must be an array.");
-
-                return Math.floor((Double) arguments.get(0));
-            }
-
-            @Override
-            public String toString() {
-                return "<native fn>";
-            }
-        });
-
-        global_environment.define("stringSplit", new LoxCallable() {
-            @Override
-            public int arity() {
-                return 2;
-            }
-
-            @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                if (!(arguments.get(0) instanceof String))
-                    throw new RuntimeError("First argument of stringSplit must be a string.");
-                if (!(arguments.get(1) instanceof String))
-                    throw new RuntimeError("Second argument of stringSplit must be a string.");
-
-                return ((String) arguments.get(0)).split((String) arguments.get(1));
-            }
-
-            @Override
-            public String toString() {
-                return "<native fn>";
-            }
-        });
-
-        global_environment.define("stringToNumber", new LoxCallable() {
-            @Override
-            public int arity() {
-                return 1;
-            }
-
-            @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                if (!(arguments.get(0) instanceof String))
-                    throw new RuntimeError("First argument of stringSplit must be a string.");
-
-                return Double.valueOf((String) arguments.get(0));
-            }
-
-            @Override
-            public String toString() {
-                return "<native fn>";
-            }
-        });
-
-        global_environment.define("read", new LoxCallable() {
-            @Override
-            public int arity() {
-                return 1;
-            }
-
-            @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                if (!(arguments.get(0) instanceof String))
-                    throw new RuntimeError("read function takes in a String file path.");
-                Path filePath = Paths.get((String) arguments.get(0));
-                try {
-                    String content = Files.readString(filePath);
-                    return content;
-                } catch (IOException e) {
-                    throw new RuntimeError("Could not open file " + arguments.get(0));
-                }
-            }
-
-            @Override
-            public String toString() {
-                return "<native fn>";
-            }
-        });
+        NativeFunction.registerAll(global_environment);
     }
 
     /**
@@ -430,9 +305,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         LoxCallable function = (LoxCallable) callee;
-        if (arguments.size() != function.arity())
+        if (arguments.size() != function.arity)
             throw new RuntimeError(expr.paren,
-                    String.format("Expected %d arguments but got %d.", function.arity(), arguments.size()));
+                    String.format("Expected %d arguments but got %d.", function.arity, arguments.size()));
+
+        for (int i = 0; i < arguments.size(); i++) {
+            if (!matchesType(arguments.get(i), function.argumentTypes[i]))
+                throw new RuntimeError(expr.paren, String.format("Expected %s for argument %d, got %s instead.",
+                        function.argumentTypes[i].name().toLowerCase(), i + 1, getTypeName(arguments.get(i))));
+        }
 
         return function.call(this, arguments);
     }
@@ -441,12 +322,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Object visitArrayAccessExpr(ArrayAccess expr) {
         Object array = evaluate(expr.array);
 
-        if (!(array instanceof Object[]))
+        if (!matchesType(array, ARRAY))
             throw new RuntimeError(expr.square, "Expression is not indexable.");
 
         Object index = evaluate(expr.index);
 
-        if (!(index instanceof Double))
+        if (!matchesType(index, NUMBER))
             throw new RuntimeError(expr.square, "Array index must be a number.");
 
         if ((double) index % 1 != 0)

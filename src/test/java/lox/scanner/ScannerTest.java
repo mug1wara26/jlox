@@ -715,7 +715,7 @@ public class ScannerTest {
 
         assertNotNull(tokens.get(0).loc);
         assertEquals(0, tokens.get(0).loc.offset());
-        assertEquals(0, tokens.get(0).loc.line());
+        assertEquals(1, tokens.get(0).loc.line());
         assertEquals(0, tokens.get(0).loc.col());
     }
 
@@ -724,8 +724,8 @@ public class ScannerTest {
         Scanner scanner = new Scanner("123\n456");
         List<Token> tokens = scanner.scanTokens();
 
-        assertEquals(0, tokens.get(0).loc.line());
-        assertEquals(1, tokens.get(1).loc.line());
+        assertEquals(1, tokens.get(0).loc.line());
+        assertEquals(2, tokens.get(1).loc.line());
     }
 
     // ========== EDGE CASES ==========

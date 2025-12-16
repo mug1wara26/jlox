@@ -47,4 +47,32 @@ public class InterpreterUtil {
 
         return object.toString();
     }
+
+    static boolean matchesType(Object val, LoxType type) {
+        return switch (type) {
+            case NUMBER -> val instanceof Double;
+            case STRING -> val instanceof String;
+            case ARRAY -> val instanceof Object[];
+            case BOOLEAN -> val instanceof Boolean;
+            case ANY -> val instanceof Object;
+            case NIL -> val == null;
+            default -> false;
+        };
+    }
+
+    static String getTypeName(Object value) {
+        if (value == null)
+            return "nil";
+        if (value instanceof Double)
+            return "number";
+        if (value instanceof String)
+            return "string";
+        if (value instanceof Boolean)
+            return "boolean";
+        if (value instanceof Object[])
+            return "array";
+        if (value instanceof LoxCallable)
+            return "function";
+        return "unknown";
+    }
 }
