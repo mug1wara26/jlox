@@ -22,6 +22,7 @@ import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.Function;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
+import lox.ast.Stmt.Return;
 import lox.ast.Stmt.Var;
 import lox.ast.Stmt.While;
 
@@ -181,6 +182,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         depth -= 1;
 
         return ret.toString();
+    }
+
+    @Override
+    public String visitReturnStmt(Return stmt) {
+        return tree("return", stmt.value);
     }
 
     private void appendDepth(StringBuilder sb) {

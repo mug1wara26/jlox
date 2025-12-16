@@ -8,6 +8,7 @@ import lox.ast.Stmt.Expression;
 import lox.ast.Stmt.Function;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
+import lox.ast.Stmt.Return;
 import lox.ast.Stmt.Var;
 import lox.ast.Stmt.While;
 import lox.ast.Expr;
@@ -342,5 +343,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         LoxFunction function = new LoxFunction(stmt, environment);
         environment.define(stmt.name.lexeme, function);
         return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(Return stmt) {
+        Object value = stmt.value == null ? null : evaluate(stmt.value);
+        throw new lox.interpreter.Return(value);
     }
 }

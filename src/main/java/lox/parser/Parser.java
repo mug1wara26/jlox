@@ -75,9 +75,8 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if (match(PRINT, LEFT_BRACE, IF, WHILE, FOR, BREAK, CONTINUE)) {
-            TokenType prev_type = previous().type;
-            switch (prev_type) {
+        if (match(PRINT, LEFT_BRACE, IF, WHILE, FOR, BREAK, CONTINUE, RETURN)) {
+            switch (previous().type) {
                 case PRINT:
                     return printStatement();
                 case LEFT_BRACE:
@@ -92,6 +91,8 @@ public class Parser {
                     return breakStatement();
                 case CONTINUE:
                     return continueStatement();
+                case RETURN:
+                    return returnStatement(previous());
                 default:
                     break;
             }
@@ -129,7 +130,7 @@ public class Parser {
         return body;
     }
 
-    private Stmt whileStatement() {
+    private Stmt.While whileStatement() {
         consume(LEFT_PAREN, "Expect '(' after while.");
         Expr condition = expr();
         consume(RIGHT_PAREN, "Expect closing ')'.");
@@ -139,7 +140,7 @@ public class Parser {
         return new Stmt.While(condition, body);
     }
 
-    private Stmt ifStatement() {
+    private Stmt.If ifStatement() {
         consume(LEFT_PAREN, "Expect '(' after if.");
         Expr condition = expr();
         consume(RIGHT_PAREN, "Expect closing ')'.");
@@ -150,13 +151,13 @@ public class Parser {
         return new Stmt.If(condition, consequent, alternate);
     }
 
-    private Stmt breakStatement() {
+    private Stmt.Break breakStatement() {
         Token keyword = previous();
         consume(SEMICOLON, "Expect ; after break.");
         return new Stmt.Break(keyword);
     }
 
-    private Stmt continueStatement() {
+    private Stmt.Continue continueStatement() {
         Token keyword = previous();
         consume(SEMICOLON, "Expect ; after continue.");
         return new Stmt.Continue(keyword);
@@ -208,6 +209,14 @@ public class Parser {
         Expr value = expr();
         consume(SEMICOLON, "Expect ; after value.");
         return new Stmt.Print(value);
+    }
+
+    private Stmt.Return returnStatement(Token keyword) {
+        Expr value = null;
+        if (!check(SEMICOLON))
+            value = expr();
+        consume(SEMICOLON, "Expect ; after value.");
+        return new Stmt.Return(keyword, value);
     }
 
     private Stmt.Expression expressionStatement() {

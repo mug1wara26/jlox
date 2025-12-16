@@ -21,7 +21,11 @@ public class LoxFunction extends LoxCallable {
             extended_environment.define(declaration.params.get(i).lexeme, arguments.get(i));
         }
 
-        interpreter.executeBlock(declaration.body, extended_environment);
+        try {
+            interpreter.executeBlock(declaration.body, extended_environment);
+        } catch (Return returnValue) {
+            return returnValue.value;
+        }
 
         return null;
     }
