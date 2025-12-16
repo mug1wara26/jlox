@@ -5,6 +5,7 @@ import lox.ast.Stmt.Block;
 import lox.ast.Stmt.Break;
 import lox.ast.Stmt.Continue;
 import lox.ast.Stmt.Expression;
+import lox.ast.Stmt.Function;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
@@ -62,7 +63,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         stmt.accept(this);
     }
 
-    private void executeBlock(List<Stmt> statements, Environment new_environment) {
+    void executeBlock(List<Stmt> statements, Environment new_environment) {
         Environment previous = environment;
 
         try {
@@ -334,5 +335,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             throw new RuntimeError(expr.square, "Array index must be a whole number.");
 
         return ((Object[]) array)[(int) Math.round((double) index)];
+    }
+
+    @Override
+    public Void visitFunctionStmt(Function stmt) {
+        LoxFunction function = new LoxFunction(stmt, environment);
+        environment.define(stmt.name.lexeme, function);
+        return null;
     }
 }

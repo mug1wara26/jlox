@@ -1,5 +1,6 @@
 package lox.interpreter;
 
+import java.util.Collections;
 import java.util.List;
 
 abstract class LoxCallable {
@@ -8,6 +9,12 @@ abstract class LoxCallable {
 
     LoxCallable() {
         this(0, new LoxType[0]);
+    }
+
+    LoxCallable(int arity) {
+        this.arity = arity;
+        argumentTypes = new LoxType[arity];
+        Collections.nCopies(arity, LoxType.ANY).toArray(argumentTypes);
     }
 
     LoxCallable(int arity, LoxType[] argumentTypes) {

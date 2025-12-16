@@ -19,6 +19,7 @@ import lox.ast.Stmt.Block;
 import lox.ast.Stmt.Break;
 import lox.ast.Stmt.Continue;
 import lox.ast.Stmt.Expression;
+import lox.ast.Stmt.Function;
 import lox.ast.Stmt.If;
 import lox.ast.Stmt.Print;
 import lox.ast.Stmt.Var;
@@ -167,6 +168,19 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitArrayAccessExpr(ArrayAccess expr) {
         return tree("arrayAccess", expr.array, expr.index);
+    }
+
+    @Override
+    public String visitFunctionStmt(Function stmt) {
+        StringBuilder ret = new StringBuilder(tree(String.format("Fun Decl %s (%s)", stmt.name,
+                String.join(",", stmt.params.stream().map(x -> x.lexeme).toList()))));
+        depth += 1;
+        for (Stmt statement : stmt.body) {
+            ret.append(print(statement));
+        }
+        depth -= 1;
+
+        return ret.toString();
     }
 
     private void appendDepth(StringBuilder sb) {

@@ -55,11 +55,13 @@ public class Parser {
 
     private Stmt declaration() {
         try {
-            if (match(VAR)) {
+            if (match(VAR, FUN)) {
                 TokenType prev_type = previous().type;
                 switch (prev_type) {
                     case VAR:
                         return varDeclaration();
+                    case FUN:
+                        return funDeclaration("function");
                     default:
                         break;
                 }
@@ -169,6 +171,25 @@ public class Parser {
 
         consume(RIGHT_BRACE, "Expect '}' at end of block.");
         return new Stmt.Block(statements);
+    }
+
+    private Stmt.Function funDeclaration(String kind) {
+        Token name = consume(IDENTIFIER, String.format("Expect %s name.", kind));
+        consume(LEFT_PAREN, String.format("Expect '(' after %s name.", kind));
+
+        List<Token> params = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (params.size() >= 255)
+                    error(peek(), "Can't have more than 255 parameters.");
+                params.add(consume(IDENTIFIER, String.format("Expect identifier as %s parameters.", kind)));
+            } while (match(COMMA));
+        }
+
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(LEFT_BRACE, String.format("Expect '{' before %s body", kind));
+
+        return new Stmt.Function(name, params, blockStatement().statements);
     }
 
     private Stmt.Var varDeclaration() {

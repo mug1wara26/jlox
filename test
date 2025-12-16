@@ -1,17 +1,11 @@
-var inp = stringSplit(read("12"), "\n");
-var part2 = 0;
+fun sayHi(first, last) {
+  var x = 1;
+  print "Hi, ${first} ${last}!";
+  fun testEnvironment() {
+    print x;
+  }
 
-for (var i = 30; i < arrayLength(inp); i = i + 1) {
-  var line = stringSplit(inp[i], ":");
-  var size = stringSplit(line[0], "x");
-
-  var maxBlocks = floor(stringToNumber(size[0]) / 3) * floor(stringToNumber(size[1]) / 3);
-  var total = 0;
-  for (var j = 1; j < 7; j = j + 1)
-    total = total + stringToNumber(stringSplit(line[1], " ")[j]);
-
-  if (total <= maxBlocks)
-    part2 = part2 + 1;
+  testEnvironment();
 }
 
-print part2;
+sayHi("Dear", "Reader");

@@ -10,6 +10,7 @@ public abstract class Stmt {
     R visitBlockStmt(Block stmt);
     R visitIfStmt(If stmt);
     R visitExpressionStmt(Expression stmt);
+    R visitFunctionStmt(Function stmt);
     R visitPrintStmt(Print stmt);
     R visitWhileStmt(While stmt);
     R visitBreakStmt(Break stmt);
@@ -55,6 +56,22 @@ public abstract class Stmt {
     }
 
     public final Expr expression;
+  }
+  public static class Function extends Stmt {
+    public Function(Token name, List<Token> params, List<Stmt> body) {
+      this.name = name;
+      this.params = params;
+      this.body = body;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitFunctionStmt(this);
+    }
+
+    public final Token name;
+    public final List<Token> params;
+    public final List<Stmt> body;
   }
   public static class Print extends Stmt {
     public Print(Expr expression) {
