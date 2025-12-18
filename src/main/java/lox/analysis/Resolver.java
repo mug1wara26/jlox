@@ -4,8 +4,14 @@ import lox.ast.Expr;
 import lox.ast.Expr.*;
 import lox.ast.Stmt;
 import lox.ast.Stmt.*;
+import lox.interpreter.Interpreter;
 
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
+    private final Interpreter interpreter;
+
+    Resolver(Interpreter interpreter) {
+        this.interpreter = interpreter;
+    }
 
     @Override
     public Void visitBlockStmt(Block stmt) {

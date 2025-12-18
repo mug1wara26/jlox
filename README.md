@@ -11,9 +11,9 @@ uses a tree-walking interpreter over the AST of the source code.
 2. Representing Code :white_check_mark:
 3. Parsing Expressions :white_check_mark:
 4. Evaluating Expressions :white_check_mark:
-5. Statements and State
-6. Control Flow
-7. Functions
+5. Statements and State :white_check_mark:
+6. Control Flow :white_check_mark:
+7. Functions :white_check_mark:
 8. Resolving and Binding
 9. Classes
 10. Inheritance
@@ -25,7 +25,14 @@ lox:
 
 ### General
 
-- Support for logging
+- Support for logging.
+- Mixing `System.out` and `System.err` leads to overlapping outputs in the REPL,
+  made REPL only use `System.out`.
+- Variable declarations work in REPL, semicolon on last statement not needed.
+- Result of expression statements are printed to the REPL if it is the last
+  statement.
+- AstPrinter prints the AST like a file tree, instead of using S-expressions,
+  which I find to be hard to read.
 
 ### Lexing
 
@@ -34,8 +41,6 @@ lox:
 
 ### Parsing
 
-- While not an actual feature of the language, my AstPrinter prints the AST like
-  a file tree, instead of using S-expressions, which I find to be hard to read.
 - Use a Pratt Parser instead of a recursive descent parser.
 - The parse tree should not have group expressions, as parenthesis are handled
   by the Pratt Parser.
@@ -47,3 +52,10 @@ lox:
 - String interpolation, by making a modal lexer and lexing a template string
   into separate tokens, then parsing the parts into one template string
   expression.
+
+### Functions
+
+- Several native functions, like reading files and splitting strings. All native
+  functions are in
+  [NativeFunction.java](./src/main/java/lox/interpreter/NativeFunction.java).
+- Native functions can specify argument types.
