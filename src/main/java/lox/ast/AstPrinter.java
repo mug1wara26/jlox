@@ -10,7 +10,7 @@ import lox.ast.Expr.Call;
 import lox.ast.Expr.Grouping;
 import lox.ast.Expr.Literal;
 import lox.ast.Expr.Logical;
-import lox.ast.Expr.StringTemplate;
+import lox.ast.Expr.TemplateString;
 import lox.ast.Expr.TemplateLiteral;
 import lox.ast.Expr.Ternary;
 import lox.ast.Expr.Unary;
@@ -79,7 +79,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     }
 
     @Override
-    public String visitStringTemplateExpr(StringTemplate expr) {
+    public String visitTemplateStringExpr(TemplateString expr) {
         Expr[] exprs = {};
         return tree("Template String", expr.templates.toArray(exprs));
     }

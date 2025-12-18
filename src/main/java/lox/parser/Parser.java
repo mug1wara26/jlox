@@ -278,7 +278,7 @@ public class Parser {
                 }
 
                 if (is_template) {
-                    yield new Expr.StringTemplate(templates);
+                    yield new Expr.TemplateString(templates);
                 }
                 assert (templates.size() == 1);
                 yield (Expr.Literal) templates.get(0);

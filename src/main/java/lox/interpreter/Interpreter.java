@@ -1,29 +1,9 @@
 package lox.interpreter;
 
 import lox.ast.Stmt;
-import lox.ast.Stmt.Block;
-import lox.ast.Stmt.Break;
-import lox.ast.Stmt.Continue;
-import lox.ast.Stmt.Expression;
-import lox.ast.Stmt.Function;
-import lox.ast.Stmt.If;
-import lox.ast.Stmt.Print;
-import lox.ast.Stmt.Return;
-import lox.ast.Stmt.Var;
-import lox.ast.Stmt.While;
+import lox.ast.Stmt.*;
 import lox.ast.Expr;
-import lox.ast.Expr.ArrayAccess;
-import lox.ast.Expr.Assign;
-import lox.ast.Expr.Binary;
-import lox.ast.Expr.Call;
-import lox.ast.Expr.Grouping;
-import lox.ast.Expr.Literal;
-import lox.ast.Expr.Logical;
-import lox.ast.Expr.StringTemplate;
-import lox.ast.Expr.TemplateLiteral;
-import lox.ast.Expr.Ternary;
-import lox.ast.Expr.Unary;
-import lox.ast.Expr.Variable;
+import lox.ast.Expr.*;
 
 import static lox.interpreter.InterpreterUtil.*;
 import static lox.interpreter.LoxType.*;
@@ -186,7 +166,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitStringTemplateExpr(StringTemplate expr) {
+    public Object visitTemplateStringExpr(TemplateString expr) {
         StringBuilder sb = new StringBuilder();
 
         for (Expr e : expr.templates)
@@ -351,7 +331,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Void visitReturnStmt(Return stmt) {
+    public Void visitReturnStmt(lox.ast.Stmt.Return stmt) {
         Object value = stmt.value == null ? null : evaluate(stmt.value);
         throw new lox.interpreter.Return(value);
     }
