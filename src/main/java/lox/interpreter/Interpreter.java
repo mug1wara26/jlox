@@ -40,6 +40,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     int loop_depth = 0;
     boolean is_break_executed = false;
     boolean is_contunue_executed = false;
+    public boolean is_repl = false;
 
     public Interpreter() {
         NativeFunction.registerAll(global_environment);
@@ -52,8 +53,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      */
     public void interpret(List<Stmt> statements) {
         try {
-            for (Stmt statement : statements) {
-                execute(statement);
+            for (int i = 0; i < statements.size(); i++) {
+                Stmt statement = statements.get(i);
+                if (is_repl && i + 1 == statements.size() && statement instanceof Expression)
+                    System.out.println(stringify(evaluate(((Expression) statement).expression)));
+                else
+                    execute(statement);
             }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);

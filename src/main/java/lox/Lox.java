@@ -3,6 +3,7 @@ package lox;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.lang.System.Logger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -22,8 +23,10 @@ public class Lox {
     static boolean hadError = false;
     static boolean hadRuntimeError = false;
     private static final Logger logger = System.getLogger(Lox.class.getName());
+    private static Interpreter interpreter;
 
     public static void main(String[] args) throws IOException {
+        interpreter = new Interpreter();
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
@@ -54,13 +57,19 @@ public class Lox {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
+        interpreter.is_repl = true;
+
         for (;;) {
             System.out.print("> ");
             String line = reader.readLine();
             if (line == null)
                 break;
+            if (!line.endsWith(";"))
+                line += ';';
             run(line);
+
             hadError = false;
+            hadRuntimeError = false;
         }
     }
 
@@ -81,7 +90,7 @@ public class Lox {
             Parser parser = new Parser(tokens);
             List<Stmt> result = parser.parse();
             logger.log(Logger.Level.DEBUG, "AST:\n" + new AstPrinter().print(result));
-            new Interpreter().interpret(result);
+            interpreter.interpret(result);
         } catch (ParseError e) {
             logger.log(Logger.Level.INFO, "Parser encountered an error:\n" + e.getMessage());
         }
@@ -123,12 +132,16 @@ public class Lox {
 
     public static void runtimeError(RuntimeError error) {
         if (error.token == null)
-            System.err.println(error.getMessage());
+            printError(error.getMessage());
         else
-            System.err.println(
+            printError(
                     String.format("%s\n[line: %d, col: %d]", error.getMessage(), error.token.loc.line(),
                             error.token.loc.col()));
         hadRuntimeError = true;
     }
 
+    public static void printError(String message) {
+        PrintStream output = interpreter.is_repl ? System.out : System.err;
+        output.println(message);
+    }
 }
