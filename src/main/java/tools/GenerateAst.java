@@ -12,7 +12,7 @@ public class GenerateAst {
     public static void main(String[] args) throws IOException {
         defineAst(OUTPUT_DIR, "Expr", Arrays.asList(
                 "Assign         : Token identifier, Expr value",
-                "Ternary        : Expr left, Token operator1, Expr mid, Token operator2, Expr right",
+                "Ternary        : Expr condition, Expr consequent, Expr alternate",
                 "Binary         : Expr left, Token operator, Expr right",
                 "Call           : Expr callee, Token paren, List<Expr> arguments",
                 "ArrayAccess    : Expr array, Token square, Expr index",
@@ -20,7 +20,7 @@ public class GenerateAst {
                 "Grouping       : Expr expression",
                 "Literal        : Object value",
                 "TemplateLiteral: Expr expression",
-                "StringTemplate : List<Expr> templates",
+                "TemplateString : List<Expr> templates",
                 "Unary          : Token operator, Expr right",
                 "Variable       : Token name"));
 

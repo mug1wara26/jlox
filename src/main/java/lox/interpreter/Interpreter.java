@@ -9,18 +9,26 @@ import static lox.interpreter.InterpreterUtil.*;
 import static lox.interpreter.LoxType.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lox.Lox;
+import lox.Token;
 import lox.TokenType;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    private record LocalIndex(int depth, int index) {
+    }
+
     private final Environment global_environment = new Environment();
     private Environment environment = new Environment(global_environment);
     int loop_depth = 0;
     boolean is_break_executed = false;
     boolean is_contunue_executed = false;
     public boolean is_repl = false;
+
+    private Map<Expr, LocalIndex> locals = new HashMap<>();
 
     public Interpreter() {
         NativeFunction.registerAll(global_environment);
@@ -71,11 +79,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return expr.accept(this);
     }
 
+    public void resolve(Expr expr, int depth, int index) {
+        locals.put(expr, new LocalIndex(depth, index));
+    }
+
     @Override
     public Object visitTernaryExpr(Ternary expr) {
-        if (isTruthy(evaluate(expr.left)))
-            return evaluate(expr.mid);
-        return evaluate(expr.right);
+        if (isTruthy(evaluate(expr.condition)))
+            return evaluate(expr.consequent);
+        return evaluate(expr.alternate);
     }
 
     @Override
@@ -210,19 +222,33 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             value = evaluate(stmt.initializer);
         }
 
-        environment.define(stmt.name.lexeme, value);
+        environment.define(value);
         return null;
+    }
+
+    private Object lookUpVariable(Token name, Expr expr) {
+        LocalIndex localIndex = locals.get(expr);
+        if (localIndex != null) {
+            return environment.getAt(localIndex.depth, localIndex.index, name);
+        } else {
+            return global_environment.get(name, NativeFunction.getIndex(name));
+        }
     }
 
     @Override
     public Object visitVariableExpr(Variable expr) {
-        return environment.get(expr.name);
+        return lookUpVariable(expr.name, expr);
     }
 
     @Override
     public Object visitAssignExpr(Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.identifier, value);
+
+        LocalIndex localIndex = locals.get(expr);
+        if (localIndex != null)
+            environment.assignAt(localIndex.depth, localIndex.index, expr.identifier, value);
+        else
+            global_environment.assign(expr.identifier, NativeFunction.getIndex(expr.identifier), value);
 
         return value;
     }
@@ -326,7 +352,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitFunctionStmt(Function stmt) {
         LoxFunction function = new LoxFunction(stmt, environment);
-        environment.define(stmt.name.lexeme, function);
+        environment.define(function);
         return null;
     }
 

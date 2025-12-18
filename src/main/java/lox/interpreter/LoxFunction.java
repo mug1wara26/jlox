@@ -18,7 +18,12 @@ public class LoxFunction extends LoxCallable {
     Object call(Interpreter interpreter, List<Object> arguments) {
         Environment extended_environment = new Environment(environment);
         for (int i = 0; i < argumentTypes.length; i++) {
-            extended_environment.define(declaration.params.get(i).lexeme, arguments.get(i));
+            /**
+             * The index of each argument should correspond to the order they appear in the
+             * function parameters. See
+             * {@link lox.analysis.Resolver#resolveFunction(Stmt.Function)}
+             */
+            extended_environment.define(arguments.get(i));
         }
 
         try {

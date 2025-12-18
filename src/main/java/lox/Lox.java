@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import lox.analysis.Resolver;
 import lox.ast.AstPrinter;
 import lox.ast.Stmt;
 import lox.interpreter.Interpreter;
@@ -24,9 +25,11 @@ public class Lox {
     static boolean hadRuntimeError = false;
     private static final Logger logger = System.getLogger(Lox.class.getName());
     private static Interpreter interpreter;
+    private static Resolver resolver;
 
     public static void main(String[] args) throws IOException {
         interpreter = new Interpreter();
+        resolver = new Resolver(interpreter);
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
             System.exit(64);
@@ -58,7 +61,7 @@ public class Lox {
         BufferedReader reader = new BufferedReader(input);
 
         interpreter.is_repl = true;
-
+        resolver.beginScope();
         for (;;) {
             System.out.print("> ");
             String line = reader.readLine();
@@ -71,6 +74,7 @@ public class Lox {
             hadError = false;
             hadRuntimeError = false;
         }
+        resolver.endScope();
     }
 
     /**
@@ -89,7 +93,16 @@ public class Lox {
 
             Parser parser = new Parser(tokens);
             List<Stmt> result = parser.parse();
+            if (hadError)
+                return;
+
+            if (interpreter.is_repl)
+                resolver.resolve(result);
+            else
+                resolver.resolveProgram(result);
+
             logger.log(Logger.Level.DEBUG, "AST:\n" + new AstPrinter().print(result));
+
             interpreter.interpret(result);
         } catch (ParseError e) {
             logger.log(Logger.Level.INFO, "Parser encountered an error:\n" + e.getMessage());

@@ -342,9 +342,8 @@ public class Parser {
                     case QUESTION_MARK:
                         Expr mhs = expr();
                         expect(COLON);
-                        Token colon_token = previous();
                         rhs = expr(op.rbp);
-                        lhs = new Expr.Ternary(lhs, op_token, mhs, colon_token, rhs);
+                        lhs = new Expr.Ternary(lhs, mhs, rhs);
                         continue;
                     case EQUAL:
                         if (!(lhs instanceof Expr.Variable))

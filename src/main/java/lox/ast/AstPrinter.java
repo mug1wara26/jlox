@@ -50,7 +50,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitTernaryExpr(Ternary expr) {
-        return tree(expr.operator1.lexeme, expr.left, expr.mid) + '\n' + tree(expr.operator2.lexeme, expr.right);
+        return tree("ternary", expr.condition, expr.consequent, expr.alternate);
     }
 
     @Override

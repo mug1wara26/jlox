@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import lox.Token;
 
 import static lox.interpreter.LoxType.*;
 
@@ -12,6 +16,8 @@ import static lox.interpreter.LoxType.*;
  * Registry for all native functions available in the Lox interpreter.
  */
 public class NativeFunction {
+    private static int index = 0;
+    private static Map<String, Integer> index_map = new HashMap<>();
 
     /**
      * Registers all native functions into the provided environment.
@@ -19,12 +25,24 @@ public class NativeFunction {
      * @param environment The global environment to register functions into
      */
     public static void registerAll(Environment environment) {
-        environment.define("clock", new ClockFunction());
-        environment.define("arrayLength", new ArrayLengthFunction());
-        environment.define("floor", new FloorFunction());
-        environment.define("stringSplit", new StringSplitFunction());
-        environment.define("stringToNumber", new StringToNumberFunction());
-        environment.define("read", new ReadFunction());
+        register(environment, "clock", new ClockFunction());
+        register(environment, "arrayLength", new ArrayLengthFunction());
+        register(environment, "floor", new FloorFunction());
+        register(environment, "stringSplit", new StringSplitFunction());
+        register(environment, "stringToNumber", new StringToNumberFunction());
+        register(environment, "read", new ReadFunction());
+    }
+
+    public static int getIndex(Token name) {
+        if (index_map.containsKey(name.lexeme))
+            return index_map.get(name.lexeme);
+
+        throw new RuntimeError(name, "Unknown identifier.");
+    }
+
+    private static void register(Environment environment, String name, LoxCallable function) {
+        index_map.put(name, index++);
+        environment.define(function);
     }
 
     private static class ClockFunction extends LoxCallable {
